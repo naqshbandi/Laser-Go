@@ -176,7 +176,7 @@
     <div id="screen-welcome" class="screen active">
         <div class="box">
             <h1>Laser Sun</h1>
-            <p>Catch and route the sun beam sequentially through <b>all glass mirrors</b> to activate the target core!</p>
+            <p>Route the laser sequentially through all mirrors to hit the target core!</p>
             <button class="btn" onclick="showScreen('screen-game'); initLevel();">Play Game</button>
         </div>
     </div>
@@ -198,7 +198,7 @@
             
             <canvas id="gameCanvas" width="380" height="240"></canvas>
             
-            <div class="status-msg" id="statusMsg">Click mirrors to catch and bounce the laser beam!</div>
+            <div class="status-msg" id="statusMsg">Click mirrors to align and hit the target!</div>
             
             <div class="btn-group">
                 <button class="btn small-btn" onclick="resetLevelWithTracking()" style="background:#cc8800; color:#fff;">Reset</button>
@@ -222,7 +222,7 @@
         const ctx = canvas.getContext("2d");
 
         let laserSource = { x: 40, y: 200, angle: -Math.PI / 2 };
-        let targetCore = { x: 330, y: 40, radius: 12 };
+        let targetCore = { x: 330, y: 40, radius: 14 };
         let mirrors = [];
 
         function showScreen(screenId) {
@@ -287,16 +287,13 @@
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
             
-            // Sequential mirrors requiring exact angle alignment to catch and bounce beam
+            // Using discrete angle index steps (0 to 7, where each step is 45 degrees / Math.PI/4)
+            // targetAngleIndex ensures the winning angle is perfectly reachable via clicks.
             mirrors = [
-                { x: 40,  y: 80,  width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 0.78, hit: false },
-                { x: 190, y: 80,  width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 2.35, hit: false },
-                { x: 190, y: 190, width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: -0.78, hit: false }
+                { x: 40,  y: 80,  width: 32, height: 10, angleIndex: 0, targetAngleIndex: 1, hit: false },  // Target angle: ~0.785
+                { x: 210, y: 80,  width: 32, height: 10, angleIndex: 2, targetAngleIndex: 3, hit: false },  // Target angle: ~2.356
+                { x: 210, y: 190, width: 32, height: 10, angleIndex: 4, targetAngleIndex: 7, hit: false }   // Target angle: ~-0.785 (or 5.497)
             ];
-
-            if (currentLevel >= 50) {
-                mirrors.push({ x: 330, y: 190, width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 1.57, hit: false });
-            }
 
             document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
             document.getElementById("coinText").innerText = `Coins: ${coins}`;
@@ -328,14 +325,14 @@
             let hitTarget = false;
             let nextRequiredMirrorIndex = 0;
 
-            for (let step = 0; step < 800; step++) {
+            for (let step = 0; step < 900; step++) {
                 rx += Math.cos(rAngle) * 4;
                 ry += Math.sin(rAngle) * 4;
                 path.push({x: rx, y: ry});
 
                 if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
 
-                // Check target hit only if all mirrors were captured sequentially
+                // Check if target is hit after all mirrors are sequentially cleared
                 if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
                     if (nextRequiredMirrorIndex === mirrors.length) {
                         hitTarget = true;
@@ -346,17 +343,21 @@
                 // Sequential mirror checking
                 if (nextRequiredMirrorIndex < mirrors.length) {
                     let m = mirrors[nextRequiredMirrorIndex];
-                    if (Math.hypot(rx - m.x, ry - m.y) < 20) {
-                        let angleDiff = Math.abs((m.currentAngle % Math.PI) - (m.targetAngle % Math.PI));
-                        if (angleDiff < 0.25 || angleDiff > (Math.PI - 0.25)) {
+                    if (Math.hypot(rx - m.x, ry - m.y) < 22) {
+                        // Check if current angle index matches target angle index
+                        let currentRad = m.angleIndex * (Math.PI / 4);
+                        let targetRad = m.targetAngleIndex * (Math.PI / 4);
+                        let angleDiff = Math.abs((currentRad % Math.PI) - (targetRad % Math.PI));
+                        
+                        if (angleDiff < 0.15 || angleDiff > (Math.PI - 0.15)) {
                             m.hit = true;
-                            let normal = m.currentAngle;
+                            let normal = currentRad;
                             rAngle = 2 * normal - rAngle - Math.PI;
                             rx += Math.cos(rAngle) * 10;
                             ry += Math.sin(rAngle) * 10;
                             nextRequiredMirrorIndex++;
                         } else {
-                            break; // Beam stops if mirror angle is incorrect
+                            break;
                         }
                     }
                 }
@@ -380,7 +381,7 @@
 
             let result = traceLaser();
 
-            // Glowing Sunbeam Effect
+            // Glowing Laser Beam
             ctx.shadowBlur = 18;
             ctx.shadowColor = result.success ? "#00ffff" : "#ffaa00";
             ctx.strokeStyle = result.success ? "#ffffff" : "#ffcc00";
@@ -410,11 +411,11 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Genuine Glass Mirrors with Capture Effect
+            // Mirrors Rendering with exact angles
             mirrors.forEach(m => {
                 ctx.save();
                 ctx.translate(m.x, m.y);
-                ctx.rotate(m.currentAngle);
+                ctx.rotate(m.angleIndex * (Math.PI / 4));
 
                 ctx.fillStyle = m.hit ? "#00ffcc" : "#555577";
                 ctx.fillRect(-m.width/2 - 3, -m.height/2 - 3, m.width + 6, m.height + 6);
@@ -429,7 +430,7 @@
                 ctx.restore();
             });
 
-            document.getElementById("keyStatus").innerHTML = result.success ? "Core: Captured & Connected!" : "Core: Align Mirrors Sequentially";
+            document.getElementById("keyStatus").innerHTML = result.success ? "Core: Target Reached Successfully!" : "Core: Align Mirrors to Reach Target";
 
             if (result.success && !levelClearedFlag) {
                 levelClearedFlag = true;
@@ -460,7 +461,7 @@
 
             mirrors.forEach(m => {
                 if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
-                    m.currentAngle += 0.5;
+                    m.angleIndex = (m.angleIndex + 1) % 8; // Cycles through 8 precise 45-degree steps
                     draw();
                 }
             });
