@@ -176,7 +176,7 @@
     <div id="screen-welcome" class="screen active">
         <div class="box">
             <h1>Laser Sun</h1>
-            <p>Guide the sun ray sequentially through <b>all glass mirrors</b> to activate the target core!</p>
+            <p>Catch and route the sun beam sequentially through <b>all glass mirrors</b> to activate the target core!</p>
             <button class="btn" onclick="showScreen('screen-game'); initLevel();">Play Game</button>
         </div>
     </div>
@@ -198,7 +198,7 @@
             
             <canvas id="gameCanvas" width="380" height="240"></canvas>
             
-            <div class="status-msg" id="statusMsg">Rotate glass mirrors to reflect the ray!</div>
+            <div class="status-msg" id="statusMsg">Click mirrors to catch and bounce the laser beam!</div>
             
             <div class="btn-group">
                 <button class="btn small-btn" onclick="resetLevelWithTracking()" style="background:#cc8800; color:#fff;">Reset</button>
@@ -221,8 +221,7 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Fixed layout for perfect sequential bouncing: Source -> Mirror 1 -> Mirror 2 -> Mirror 3 -> Target
-        let laserSource = { x: 40, y: 200, angle: -Math.PI / 2 }; // Pointing straight up
+        let laserSource = { x: 40, y: 200, angle: -Math.PI / 2 };
         let targetCore = { x: 330, y: 40, radius: 12 };
         let mirrors = [];
 
@@ -288,15 +287,15 @@
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
             
-            // 3 mirrors positioned precisely in a chained loop path
+            // Sequential mirrors requiring exact angle alignment to catch and bounce beam
             mirrors = [
-                { x: 40, y: 70, width: 28, height: 8, currentAngle: Math.random() * 3, targetAngle: 0.78, hit: false },
-                { x: 200, y: 70, width: 28, height: 8, currentAngle: Math.random() * 3, targetAngle: 2.35, hit: false },
-                { x: 200, y: 200, width: 28, height: 8, currentAngle: Math.random() * 3, targetAngle: -0.78, hit: false }
+                { x: 40,  y: 80,  width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 0.78, hit: false },
+                { x: 190, y: 80,  width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 2.35, hit: false },
+                { x: 190, y: 190, width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: -0.78, hit: false }
             ];
 
             if (currentLevel >= 50) {
-                mirrors.push({ x: 330, y: 200, width: 28, height: 8, currentAngle: Math.random() * 3, targetAngle: 1.57, hit: false });
+                mirrors.push({ x: 330, y: 190, width: 32, height: 10, currentAngle: Math.random() * 3, targetAngle: 1.57, hit: false });
             }
 
             document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
@@ -327,32 +326,38 @@
             
             let path = [{x: rx, y: ry}];
             let hitTarget = false;
+            let nextRequiredMirrorIndex = 0;
 
-            for (let step = 0; step < 600; step++) {
+            for (let step = 0; step < 800; step++) {
                 rx += Math.cos(rAngle) * 4;
                 ry += Math.sin(rAngle) * 4;
                 path.push({x: rx, y: ry});
 
                 if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
 
-                // Target check
+                // Check target hit only if all mirrors were captured sequentially
                 if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
-                    hitTarget = true;
+                    if (nextRequiredMirrorIndex === mirrors.length) {
+                        hitTarget = true;
+                    }
                     break;
                 }
 
-                // Mirror collision check
-                for (let m of mirrors) {
-                    if (Math.hypot(rx - m.x, ry - m.y) < 18) {
+                // Sequential mirror checking
+                if (nextRequiredMirrorIndex < mirrors.length) {
+                    let m = mirrors[nextRequiredMirrorIndex];
+                    if (Math.hypot(rx - m.x, ry - m.y) < 20) {
                         let angleDiff = Math.abs((m.currentAngle % Math.PI) - (m.targetAngle % Math.PI));
                         if (angleDiff < 0.25 || angleDiff > (Math.PI - 0.25)) {
                             m.hit = true;
                             let normal = m.currentAngle;
                             rAngle = 2 * normal - rAngle - Math.PI;
-                            rx += Math.cos(rAngle) * 8;
-                            ry += Math.sin(rAngle) * 8;
+                            rx += Math.cos(rAngle) * 10;
+                            ry += Math.sin(rAngle) * 10;
+                            nextRequiredMirrorIndex++;
+                        } else {
+                            break; // Beam stops if mirror angle is incorrect
                         }
-                        break;
                     }
                 }
                 if (hitTarget) break;
@@ -367,7 +372,6 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Grid background
             ctx.strokeStyle = "#121225";
             ctx.lineWidth = 1;
             for (let i = 0; i < canvas.width; i += 30) {
@@ -376,8 +380,8 @@
 
             let result = traceLaser();
 
-            // Draw Sunbeam Laser Effect with Glow
-            ctx.shadowBlur = 15;
+            // Glowing Sunbeam Effect
+            ctx.shadowBlur = 18;
             ctx.shadowColor = result.success ? "#00ffff" : "#ffaa00";
             ctx.strokeStyle = result.success ? "#ffffff" : "#ffcc00";
             ctx.lineWidth = 4;
@@ -385,9 +389,9 @@
             ctx.moveTo(laserSource.x, laserSource.y);
             result.path.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
-            ctx.shadowBlur = 0; // Reset shadow
+            ctx.shadowBlur = 0;
 
-            // Draw Laser Source Sun Emitter
+            // Source Emitter
             ctx.fillStyle = "#ff8800";
             ctx.beginPath();
             ctx.arc(laserSource.x, laserSource.y, 14, 0, Math.PI * 2);
@@ -397,7 +401,7 @@
             ctx.arc(laserSource.x, laserSource.y, 7, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw Target Core
+            // Target Core
             ctx.fillStyle = result.success ? "#00ffcc" : "#00aa55";
             ctx.beginPath();
             ctx.arc(targetCore.x, targetCore.y, targetCore.radius, 0, Math.PI * 2);
@@ -406,17 +410,15 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Draw Genuine Glass Mirrors
+            // Genuine Glass Mirrors with Capture Effect
             mirrors.forEach(m => {
                 ctx.save();
                 ctx.translate(m.x, m.y);
                 ctx.rotate(m.currentAngle);
 
-                // Mirror Frame
-                ctx.fillStyle = m.hit ? "#00ffcc" : "#444466";
-                ctx.fillRect(-m.width/2 - 2, -m.height/2 - 2, m.width + 4, m.height + 4);
+                ctx.fillStyle = m.hit ? "#00ffcc" : "#555577";
+                ctx.fillRect(-m.width/2 - 3, -m.height/2 - 3, m.width + 6, m.height + 6);
 
-                // Glass Reflective Surface Gradient
                 let gradient = ctx.createLinearGradient(-m.width/2, 0, m.width/2, 0);
                 gradient.addColorStop(0, "#aaffff");
                 gradient.addColorStop(0.5, "#ffffff");
@@ -427,7 +429,7 @@
                 ctx.restore();
             });
 
-            document.getElementById("keyStatus").innerHTML = result.success ? "Core: All Mirrors Hit" : "Core: Align Mirrors";
+            document.getElementById("keyStatus").innerHTML = result.success ? "Core: Captured & Connected!" : "Core: Align Mirrors Sequentially";
 
             if (result.success && !levelClearedFlag) {
                 levelClearedFlag = true;
@@ -457,8 +459,8 @@
             const mouseY = event.clientY - rect.top;
 
             mirrors.forEach(m => {
-                if (Math.hypot(mouseX - m.x, mouseY - m.y) < 22) {
-                    m.currentAngle += 0.5; // Rotate glass mirror on click
+                if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
+                    m.currentAngle += 0.5;
                     draw();
                 }
             });
