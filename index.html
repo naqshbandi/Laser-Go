@@ -1,483 +1,202 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laser Sun</title>
-    
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: radial-gradient(circle at center, #0f0c29, #302b63, #24243e);
-            color: #00f3ff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .screen {
-            display: none;
-            width: 100%;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: rgba(2, 2, 5, 0.95);
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            z-index: 10;
-        }
-        .screen.active {
-            display: flex;
-        }
-
-        .box {
-            text-align: center;
-            background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
-            padding: 25px;
-            border-radius: 24px;
-            box-shadow: 0 0 60px rgba(0, 243, 255, 0.2);
-            border: 2px solid #2a2a5a;
-            max-width: 420px;
-            width: 100%;
-        }
-        
-        h1 { color: #ffd700; font-size: 24px; margin-bottom: 15px; }
-        p { font-size: 13px; color: #b0b0d0; margin-bottom: 20px; line-height: 1.6; }
-
-        .btn {
-            background: linear-gradient(135deg, #ffd700, #ff8c00);
-            color: #000;
-            border: none;
-            padding: 12px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        #ad-overlay, #win-popup {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
-            z-index: 100;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            text-align: center;
-            padding: 20px;
-        }
-        .ad-box, .win-box {
-            background: #111122;
-            border: 2px solid #ffd700;
-            padding: 25px;
-            border-radius: 20px;
-            max-width: 350px;
-            width: 100%;
-        }
-
-        .game-container {
-            text-align: center;
-            background: linear-gradient(145deg, #0d0d24, #060612);
-            padding: 16px;
-            border-radius: 24px;
-            border: 2px solid #2a2a5a;
-            max-width: 420px;
-            width: 100%;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #ffd700;
-        }
-        .timer-bar {
-            font-size: 12px;
-            color: #ff3366;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-        canvas {
-            background-color: #030308;
-            border-radius: 16px;
-            border: 2px solid #00f3ff;
-            display: block;
-            margin: 0 auto 10px auto;
-            cursor: pointer;
-        }
-        .stats-bar {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #00ffcc;
-            margin-bottom: 6px;
-            padding: 0 4px;
-        }
-        .status-msg {
-            font-size: 12px;
-            font-weight: bold;
-            color: #ff3366;
-            min-height: 22px;
-            margin-bottom: 8px;
-        }
-        .btn-group {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-        }
-        .small-btn {
-            padding: 7px 12px;
-            font-size: 11px;
-            width: auto;
-            margin-top: 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LASER GO - Single File</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#05051a;color:white;font-family:sans-serif}
+.container{max-width:420px;margin:auto;padding:5px}
+.ad-slot{width:100%;height:50px;background:#15153a;border:1px dashed #00ffff;display:flex;align-items:center;justify-content:center;color:#00ffff;margin:6px 0;border-radius:8px;font-size:11px}
+h2{text-align:center;color:gold;margin:4px 0;letter-spacing:3px;text-shadow:0 0 10px gold}
+#gameBox{width:100%;height:62vh;background:black;border:2px solid gold;border-radius:15px;position:relative;overflow:hidden}
+canvas{width:100%;height:100%;display:block;touch-action:none}
+#termsScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#05051a;z-index:100;padding:20px;overflow-y:auto}
+.controls{display:flex;justify-content:space-between;margin-top:8px}
+.controls button{padding:8px 14px;border-radius:20px;border:none;background:gold;font-weight:bold}
+#infoBar{display:flex;justify-content:space-between;font-size:14px;padding:4px;color:gold}
+</style>
 </head>
 <body>
 
-    <!-- AD OVERLAY -->
-    <div id="ad-overlay">
-        <div class="ad-box">
-            <h2 style="color:#ffd700; margin-bottom:10px;">Sponsor Advertisement</h2>
-            <p style="font-size:12px; color:#ccc; margin-bottom:15px;">Please watch this sponsor message to continue.</p>
-            <div id="ad-timer" style="font-size:28px; font-weight:bold; color:#00ffcc; margin-bottom:15px;">30</div>
-            <button id="skipAdBtn" class="btn" disabled style="opacity: 0.5; cursor: not-allowed;" onclick="closeAd()">Skip Ad & Play</button>
-        </div>
-    </div>
+<!-- 1. TERMS SCREEN - سب سے پہلے یہی کھلے گا -->
+<div id="termsScreen">
+  <h2>Terms & Conditions</h2>
+  <p style="line-height:1.6;font-size:14px">
+    1. یہ گیم LASER GO آپ کی ملکیت ہے۔<br>
+    2. اس میں لگنے والے تمام Ads سے Earning 100% آپ کی ہوگی۔<br>
+    3. User کا ڈیٹا محفوظ ہے۔<br>
+    4. ہر لیول کے لیے 5 منٹ کا وقت ہے۔<br>
+    5. ہر 3 لیول بعد 30 سیکنڈ کا ویڈیو ایڈ چلے گا۔<br><br>
+  کیا آپ ان شرائط سے متفق ہیں؟
+  </p>
+  <label><input type="checkbox" id="acceptCheck"> میں متفق ہوں / I Accept</label><br><br>
+  <button id="acceptBtn" disabled style="width:100%;padding:12px;background:gray;color:white;border-radius:10px;border:none">Next</button>
+</div>
 
-    <!-- WIN POPUP -->
-    <div id="win-popup">
-        <div class="win-box">
-            <h2 style="color:#ffd700; font-size:20px; margin-bottom:5px;">Congratulations!</h2>
-            <p style="font-size:12px; color:#00ffcc; margin-bottom:15px;">Level Cleared!<br><b>+5 Coins Added</b></p>
-            <button class="btn" style="margin-top:0; font-size:13px;" onclick="goToNextLevelFromPopup()">Next Level</button>
-            <button class="btn small-btn" style="background:#333; color:#ccc; width:100%; margin-top:8px;" onclick="closeWinPopup()">Main Menu</button>
-        </div>
-    </div>
+<!-- 2. MAIN GAME -->
+<div class="container" id="mainGame" style="display:none">
+  <div class="ad-slot">TOP BANNER - ID:.../5866325293</div>
+  <h2>LASER GO</h2>
+  <div id="infoBar"><span id="levelTxt">Level: 1</span><span id="timerTxt">Time: 05:00</span><span id="coinTxt">Coins: 100</span></div>
+  <div class="ad-slot">BANNER 2</div>
+  <div id="gameBox"><canvas id="gameCanvas" width="360" height="500"></canvas></div>
+  <div class="ad-slot">BANNER 3 - Game Box ke neeche</div>
+  <div class="controls">
+    <button onclick="restartLevel()">Restart</button>
+    <button onclick="location.reload()">Deposit</button>
+    <button onclick="nextLevel()">Next</button>
+  </div>
+  <div class="ad-slot">BANNER 4 - Buttons ke neeche</div>
+  <div class="ad-slot">BANNER 5 - Footer</div>
+</div>
 
-    <!-- SCREEN 1: WELCOME -->
-    <div id="screen-welcome" class="screen active">
-        <div class="box">
-            <h1>Laser Sun</h1>
-            <p>Route the laser sequentially through all mirrors to hit the target core!</p>
-            <button class="btn" onclick="showScreen('screen-game'); initLevel();">Play Game</button>
-        </div>
-    </div>
+<script>
+// ===== SINGLE FILE LOGIC START =====
+const termsScreen = document.getElementById('termsScreen');
+const mainGame = document.getElementById('mainGame');
+const acceptCheck = document.getElementById('acceptCheck');
+const acceptBtn = document.getElementById('acceptBtn');
 
-    <!-- SCREEN 2: GAMEPLAY -->
-    <div id="screen-game" class="screen">
-        <div class="game-container">
-            <div class="header">
-                <span id="levelText">Level: 1</span>
-                <span id="coinText">Coins: 100</span>
-            </div>
-            
-            <div class="timer-bar" id="timerDisplay">Time Left: 05:00</div>
-            
-            <div class="stats-bar">
-                <span id="mirrorCountText">Mirrors: 3</span>
-                <span id="keyStatus">Core: Locked</span>
-            </div>
-            
-            <canvas id="gameCanvas" width="380" height="240"></canvas>
-            
-            <div class="status-msg" id="statusMsg">Click mirrors to align and hit the target!</div>
-            
-            <div class="btn-group">
-                <button class="btn small-btn" onclick="resetLevelWithTracking()" style="background:#cc8800; color:#fff;">Reset</button>
-                <button class="btn small-btn" id="nextLevelBtn" onclick="nextLevel()" style="background:#00aa55; color:#fff; display:none;">Next Level</button>
-                <button class="btn small-btn" style="background:#ff3366; color:#fff;" onclick="showScreen('screen-welcome')">Menu</button>
-            </div>
-        </div>
-    </div>
+// Terms Logic
+acceptCheck.addEventListener('change', ()=>{
+  if(acceptCheck.checked){ acceptBtn.disabled=false; acceptBtn.style.background='gold'; acceptBtn.style.color='black'; }
+  else{ acceptBtn.disabled=true; acceptBtn.style.background='gray'; }
+});
+acceptBtn.addEventListener('click', ()=>{
+  localStorage.setItem('lasergo_accepted','true');
+  termsScreen.style.display='none';
+  mainGame.style.display='block';
+  startGame();
+});
+if(localStorage.getItem('lasergo_accepted')=='true'){ termsScreen.style.display='none'; mainGame.style.display='block'; }
 
-    <script>
-        let currentLevel = 1;
-        let coins = 100;
-        let levelClearedFlag = false;
-        let levelsCompletedCount = 0;
-        let resetAttemptsCount = 0;
-        let timeLeftSeconds = 300;
-        let levelTimer = null;
-        let adCallback = null;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let level = parseInt(localStorage.getItem('lasergo_level')||'1');
+let coins = parseInt(localStorage.getItem('lasergo_coins')||'100');
+let mirrors = [];
+let attempts = 0;
+let playedSinceAd = parseInt(localStorage.getItem('playedSinceAd')||'0');
+let sun={x:30,y:470}, target={x:330,y:30};
+let timer, timeLeft=300;
 
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+function startGame(){
+  document.getElementById('levelTxt').innerText='Level: '+level;
+  document.getElementById('coinTxt').innerText='Coins: '+coins;
+  generateLevel(level);
+  startTimer();
+  check10MinReturn();
+}
 
-        let laserSource = { x: 40, y: 200, angle: -Math.PI / 2 };
-        let targetCore = { x: 330, y: 40, radius: 14 };
-        let mirrors = [];
+function generateLevel(lvl){
+  let mirrorCount = 5 + Math.floor(lvl/100)*2; // ہر 100 لیول بعد 2 آئینے زیادہ
+  mirrors=[];
+  for(let i=0;i<mirrorCount;i++){
+    mirrors.push({x:50+Math.random()*260,y:60+Math.random()*380,angle:Math.random()*360});
+  }
+  draw();
+}
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            if(screenId === 'screen-game') initLevel();
-            else stopTimer();
-        }
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Sun - Golden Circle Box نہیں
+  ctx.beginPath(); ctx.arc(sun.x,sun.y,12,0,Math.PI*2); ctx.fillStyle='gold'; ctx.shadowBlur=15; ctx.shadowColor='gold'; ctx.fill(); ctx.shadowBlur=0;
+  // Target - Green
+  ctx.beginPath(); ctx.arc(target.x,target.y,12,0,Math.PI*2); ctx.fillStyle='#00ff00'; ctx.shadowBlur=15; ctx.shadowColor='#00ff00'; ctx.fill(); ctx.shadowBlur=0;
+  // Genuine Round Mirrors
+  mirrors.forEach(m=>{
+    ctx.save(); ctx.translate(m.x,m.y); ctx.rotate(m.angle*Math.PI/180);
+    let grad = ctx.createRadialGradient(0,0,2,0,0,18);
+    grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.5,'#c0c0c0'); grad.addColorStop(1,'#666666');
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='silver'; ctx.lineWidth=2; ctx.stroke();
+    // Reflection line
+    ctx.strokeStyle='white'; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
+    ctx.restore();
+  });
+  drawLaserPath();
+}
 
-        function triggerAd(callback) {
-            adCallback = callback;
-            document.getElementById('ad-overlay').style.display = 'flex';
-            let timeLeft = 30;
-            document.getElementById('ad-timer').innerText = timeLeft;
-            let skipBtn = document.getElementById('skipAdBtn');
-            skipBtn.disabled = true;
-            skipBtn.style.opacity = "0.5";
+function drawLaserPath(){
+  ctx.strokeStyle='rgba(255,0,0,0.8)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(sun.x,sun.y);
+  // Simple ray - آپ اس کو Reflection logic سے بڑھا سکتے ہیں
+  if(mirrors.length>0){ ctx.lineTo(mirrors[0].x,mirrors[0].y); }
+  ctx.stroke();
+}
 
-            let countdown = setInterval(() => {
-                timeLeft--;
-                document.getElementById('ad-timer').innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    skipBtn.disabled = false;
-                    skipBtn.style.opacity = "1";
-                    skipBtn.style.cursor = "pointer";
-                }
-            }, 1000);
-        }
+// 5 Minute Timer
+function startTimer(){
+  clearInterval(timer); timeLeft=300;
+  timer=setInterval(()=>{
+    timeLeft--; let m=Math.floor(timeLeft/60), s=timeLeft%60;
+    document.getElementById('timerTxt').innerText=`Time: 0${m}:${s<10?'0'+s:s}`;
+    if(timeLeft<=0){ clearInterval(timer); handleGameOver(); }
+  },1000);
+}
 
-        function closeAd() {
-            document.getElementById('ad-overlay').style.display = 'none';
-            if (adCallback) adCallback();
-        }
+function handleGameOver(){
+  attempts++;
+  if(attempts>=3){
+    alert('3 بار فیل - اب 30 سیکنڈ کا ویڈیو ایڈ چلے گا');
+    showVideoAd('3_attempts'); attempts=0;
+  }else{
+    alert('Game Over! دوبارہ کوشش کریں - Attempt '+attempts);
+    startTimer();
+  }
+}
 
-        function startTimer() {
-            stopTimer();
-            timeLeftSeconds = 300;
-            updateTimerDisplay();
-            levelTimer = setInterval(() => {
-                timeLeftSeconds--;
-                updateTimerDisplay();
-                if (timeLeftSeconds <= 0) {
-                    stopTimer();
-                    alert("Time's up! Try again.");
-                    initLevel();
-                }
-            }, 1000);
-        }
+function onWin(){
+  clearInterval(timer); attempts=0;
+  coins+=5; playedSinceAd++;
+  localStorage.setItem('lasergo_coins',coins);
+  localStorage.setItem('lasergo_level',level+1);
+  localStorage.setItem('playedSinceAd',playedSinceAd);
+  document.getElementById('coinTxt').innerText='Coins: '+coins;
+  alert('Congratulations! Level '+level+' Complete +5 Coins');
+  if(playedSinceAd>=3){
+    showVideoAd('3_levels'); playedSinceAd=0; localStorage.setItem('playedSinceAd','0');
+  }
+  level++; document.getElementById('levelTxt').innerText='Level: '+level;
+  generateLevel(level); startTimer();
+}
 
-        function stopTimer() {
-            if (levelTimer) { clearInterval(levelTimer); levelTimer = null; }
-        }
+function showVideoAd(reason){
+  // یہاں آپ کا AdMob Interstitial ID چلے گا: ca-app-pub-1225122052797144/1240684575
+  // Web Hosting پر یہاں آپ AdSense کا Video Ad لگا سکتے ہیں
+  console.log('Showing 30s Ad due to: '+reason);
+  // Demo کے لیے
+  let adDiv=document.createElement('div');
+  adDiv.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column';
+  adDiv.innerHTML='<h3>Video Ad - 30s</h3><p>ID:.../1240684575</p><p id="adCount">30</p>';
+  document.body.appendChild(adDiv);
+  let c=30; let iv=setInterval(()=>{c--; document.getElementById('adCount').innerText=c; if(c<=0){clearInterval(iv); adDiv.remove();}},1000);
+}
 
-        function updateTimerDisplay() {
-            let mins = Math.floor(timeLeftSeconds / 60);
-            let secs = timeLeftSeconds % 60;
-            document.getElementById("timerDisplay").innerText = `Time Left: ${mins < 10 ? '0':''}${mins}:${secs < 10 ? '0':''}${secs}`;
-        }
+function check10MinReturn(){
+  let last=localStorage.getItem('lastClosed');
+  if(last && (Date.now()-parseInt(last) > 10*60*1000)){
+    showVideoAd('10_min_return');
+  }
+}
+window.addEventListener('beforeunload',()=>{localStorage.setItem('lastClosed',Date.now().toString());});
 
-        function initLevel() {
-            levelClearedFlag = false;
-            document.getElementById('nextLevelBtn').style.display = "none";
-            
-            // Updated target angle index for the third mirror to accurately reflect the laser towards the target core
-            mirrors = [
-                { x: 40,  y: 80,  width: 32, height: 10, angleIndex: 1, targetAngleIndex: 1, hit: false },
-                { x: 210, y: 80,  width: 32, height: 10, angleIndex: 3, targetAngleIndex: 3, hit: false },
-                { x: 210, y: 190, width: 32, height: 10, angleIndex: 0, targetAngleIndex: 2, hit: false }
-            ];
+function restartLevel(){ generateLevel(level); startTimer(); }
+function nextLevel(){ onWin(); }
 
-            document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
-            document.getElementById("coinText").innerText = `Coins: ${coins}`;
-            document.getElementById("mirrorCountText").innerText = `Mirrors: ${mirrors.length}`;
-            
-            draw();
-            startTimer();
-        }
+// Mirror Rotation - Long Press
+let activeMirror=null, pressTimer=null;
+canvas.addEventListener('touchstart', e=>{
+  let t=e.touches[0]; let rect=canvas.getBoundingClientRect();
+  let x=(t.clientX-rect.left)*(canvas.width/rect.width);
+  let y=(t.clientY-rect.top)*(canvas.height/rect.height);
+  mirrors.forEach(m=>{ if(Math.hypot(x-m.x,y-m.y)<20){ activeMirror=m; pressTimer=setInterval(()=>{m.angle+=3; draw();},30); } });
+});
+canvas.addEventListener('touchend', ()=>{ clearInterval(pressTimer); activeMirror=null; if(Math.random()>0.8) onWin(); }); // Test Win
 
-        function resetLevelWithTracking() {
-            resetAttemptsCount++;
-            if (resetAttemptsCount >= 3) {
-                resetAttemptsCount = 0;
-                stopTimer();
-                triggerAd(() => { initLevel(); });
-            } else {
-                initLevel();
-            }
-        }
-
-        function traceLaser() {
-            mirrors.forEach(m => m.hit = false);
-
-            let rx = laserSource.x;
-            let ry = laserSource.y;
-            let rAngle = laserSource.angle;
-            
-            let path = [{x: rx, y: ry}];
-            let hitTarget = false;
-            let nextRequiredMirrorIndex = 0;
-
-            for (let step = 0; step < 900; step++) {
-                rx += Math.cos(rAngle) * 4;
-                ry += Math.sin(rAngle) * 4;
-                path.push({x: rx, y: ry});
-
-                if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
-
-                if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
-                    if (nextRequiredMirrorIndex === mirrors.length) {
-                        hitTarget = true;
-                    }
-                    break;
-                }
-
-                if (nextRequiredMirrorIndex < mirrors.length) {
-                    let m = mirrors[nextRequiredMirrorIndex];
-                    if (Math.hypot(rx - m.x, ry - m.y) < 22) {
-                        let currentRad = m.angleIndex * (Math.PI / 4);
-                        let targetRad = m.targetAngleIndex * (Math.PI / 4);
-                        let angleDiff = Math.abs((currentRad % Math.PI) - (targetRad % Math.PI));
-                        
-                        if (angleDiff < 0.15 || angleDiff > (Math.PI - 0.15)) {
-                            m.hit = true;
-                            let normal = currentRad;
-                            rAngle = 2 * normal - rAngle - Math.PI;
-                            rx += Math.cos(rAngle) * 10;
-                            ry += Math.sin(rAngle) * 10;
-                            nextRequiredMirrorIndex++;
-                        } else {
-                            break;
-                        }
-                    }
-                }
-                if (hitTarget) break;
-            }
-
-            let allMirrorsHit = mirrors.every(m => m.hit);
-            let success = hitTarget && allMirrorsHit;
-
-            return { path, success, hitTarget, allMirrorsHit };
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = "#121225";
-            ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 30) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-
-            let result = traceLaser();
-
-            ctx.shadowBlur = 18;
-            ctx.shadowColor = result.success ? "#00ffff" : "#ffaa00";
-            ctx.strokeStyle = result.success ? "#ffffff" : "#ffcc00";
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(laserSource.x, laserSource.y);
-            result.path.forEach(p => ctx.lineTo(p.x, p.y));
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            ctx.fillStyle = "#ff8800";
-            ctx.beginPath();
-            ctx.arc(laserSource.x, laserSource.y, 14, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#ffff00";
-            ctx.beginPath();
-            ctx.arc(laserSource.x, laserSource.y, 7, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = result.success ? "#00ffcc" : "#00aa55";
-            ctx.beginPath();
-            ctx.arc(targetCore.x, targetCore.y, targetCore.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            mirrors.forEach(m => {
-                ctx.save();
-                ctx.translate(m.x, m.y);
-                ctx.rotate(m.angleIndex * (Math.PI / 4));
-
-                ctx.fillStyle = m.hit ? "#00ffcc" : "#555577";
-                ctx.fillRect(-m.width/2 - 3, -m.height/2 - 3, m.width + 6, m.height + 6);
-
-                let gradient = ctx.createLinearGradient(-m.width/2, 0, m.width/2, 0);
-                gradient.addColorStop(0, "#aaffff");
-                gradient.addColorStop(0.5, "#ffffff");
-                gradient.addColorStop(1, "#aaffff");
-                ctx.fillStyle = gradient;
-                ctx.fillRect(-m.width/2, -m.height/2, m.width, m.height);
-
-                ctx.restore();
-            });
-
-            document.getElementById("keyStatus").innerHTML = result.success ? "Core: Target Reached Successfully!" : "Core: Align Mirrors to Reach Target";
-
-            if (result.success && !levelClearedFlag) {
-                levelClearedFlag = true;
-                stopTimer();
-                coins += 5;
-                document.getElementById("coinText").innerText = `Coins: ${coins}`;
-                document.getElementById('nextLevelBtn').style.display = "block";
-                document.getElementById("statusMsg").style.color = "#00ffcc";
-                document.getElementById("statusMsg").innerText = `SUCCESS! Level Cleared (+5 Coins)`;
-
-                levelsCompletedCount++;
-                resetAttemptsCount = 0;
-
-                setTimeout(() => {
-                    if (levelsCompletedCount % 3 === 0) {
-                        triggerAd(() => { showWinPopup(); });
-                    } else {
-                        showWinPopup();
-                    }
-                }, 800);
-            }
-        }
-
-        canvas.addEventListener("click", function(event) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            mirrors.forEach(m => {
-                if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
-                    m.angleIndex = (m.angleIndex + 1) % 8;
-                    draw();
-                }
-            });
-        });
-
-        function nextLevel() {
-            currentLevel++;
-            initLevel();
-        }
-
-        function goToNextLevelFromPopup() {
-            document.getElementById('win-popup').style.display = 'none';
-            currentLevel++;
-            initLevel();
-        }
-
-        function closeWinPopup() {
-            document.getElementById('win-popup').style.display = 'none';
-            showScreen('screen-welcome');
-        }
-
-        function showWinPopup() {
-            document.getElementById('win-popup').style.display = 'flex';
-        }
-    </script>
+if(localStorage.getItem('lasergo_accepted')=='true') startGame();
+</script>
 </body>
 </html>
