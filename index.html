@@ -287,12 +287,11 @@
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
             
-            // Using discrete angle index steps (0 to 7, where each step is 45 degrees / Math.PI/4)
-            // targetAngleIndex ensures the winning angle is perfectly reachable via clicks.
+            // Setting exact target angle index for the third mirror to ensure it reaches the target core precisely
             mirrors = [
-                { x: 40,  y: 80,  width: 32, height: 10, angleIndex: 0, targetAngleIndex: 1, hit: false },  // Target angle: ~0.785
-                { x: 210, y: 80,  width: 32, height: 10, angleIndex: 2, targetAngleIndex: 3, hit: false },  // Target angle: ~2.356
-                { x: 210, y: 190, width: 32, height: 10, angleIndex: 4, targetAngleIndex: 7, hit: false }   // Target angle: ~-0.785 (or 5.497)
+                { x: 40,  y: 80,  width: 32, height: 10, angleIndex: 1, targetAngleIndex: 1, hit: false },
+                { x: 210, y: 80,  width: 32, height: 10, angleIndex: 3, targetAngleIndex: 3, hit: false },
+                { x: 210, y: 190, width: 32, height: 10, angleIndex: 2, targetAngleIndex: 6, hit: false }
             ];
 
             document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
@@ -332,7 +331,6 @@
 
                 if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
 
-                // Check if target is hit after all mirrors are sequentially cleared
                 if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
                     if (nextRequiredMirrorIndex === mirrors.length) {
                         hitTarget = true;
@@ -340,11 +338,9 @@
                     break;
                 }
 
-                // Sequential mirror checking
                 if (nextRequiredMirrorIndex < mirrors.length) {
                     let m = mirrors[nextRequiredMirrorIndex];
                     if (Math.hypot(rx - m.x, ry - m.y) < 22) {
-                        // Check if current angle index matches target angle index
                         let currentRad = m.angleIndex * (Math.PI / 4);
                         let targetRad = m.targetAngleIndex * (Math.PI / 4);
                         let angleDiff = Math.abs((currentRad % Math.PI) - (targetRad % Math.PI));
@@ -381,7 +377,6 @@
 
             let result = traceLaser();
 
-            // Glowing Laser Beam
             ctx.shadowBlur = 18;
             ctx.shadowColor = result.success ? "#00ffff" : "#ffaa00";
             ctx.strokeStyle = result.success ? "#ffffff" : "#ffcc00";
@@ -392,7 +387,6 @@
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Source Emitter
             ctx.fillStyle = "#ff8800";
             ctx.beginPath();
             ctx.arc(laserSource.x, laserSource.y, 14, 0, Math.PI * 2);
@@ -402,7 +396,6 @@
             ctx.arc(laserSource.x, laserSource.y, 7, 0, Math.PI * 2);
             ctx.fill();
 
-            // Target Core
             ctx.fillStyle = result.success ? "#00ffcc" : "#00aa55";
             ctx.beginPath();
             ctx.arc(targetCore.x, targetCore.y, targetCore.radius, 0, Math.PI * 2);
@@ -411,7 +404,6 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Mirrors Rendering with exact angles
             mirrors.forEach(m => {
                 ctx.save();
                 ctx.translate(m.x, m.y);
@@ -461,7 +453,7 @@
 
             mirrors.forEach(m => {
                 if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
-                    m.angleIndex = (m.angleIndex + 1) % 8; // Cycles through 8 precise 45-degree steps
+                    m.angleIndex = (m.angleIndex + 1) % 8;
                     draw();
                 }
             });
