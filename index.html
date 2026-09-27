@@ -3,139 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>LASER GO - HARD MODE</title>
+<title>LASER GO - FINAL</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#050514;color:#fff;font-family:Arial;overflow:hidden}
+body{background:#050514;color:#fff;font-family:Arial, sans-serif;overflow:hidden;user-select:none}
 .container{max-width:420px;margin:0 auto;padding:6px;height:100vh;display:flex;flex-direction:column}
-.ad-slot{width:100%;min-height:46px;background:#12122e;border:1px dashed #00e5ff;display:flex;align-items:center;justify-content:center;color:#00e5ff;border-radius:8px;font-size:11px;margin:5px 0}
-.header{text-align:center;color:gold;font-size:17px;font-weight:800}
-.info{display:flex;justify-content:space-between;color:gold;font-size:12px;padding:4px}
-#gameBox{flex:1;background:#000;border:2px solid gold;border-radius:14px;overflow:hidden}
+.ad-slot{width:100%;min-height:48px;background:#12122e;border:1px dashed #00e5ff;display:flex;align-items:center;justify-content:center;color:#00e5ff;border-radius:8px;font-size:11px;margin:5px 0;text-align:center}
+.header{text-align:center;color:gold;font-size:18px;font-weight:800;letter-spacing:1px}
+.info{display:flex;justify-content:space-between;color:#ccc;font-size:11px;padding:4px 2px}
+#gameBox{flex:1;background:radial-gradient(#0a0a1a,#000);border:2px solid gold;border-radius:14px;position:relative;overflow:hidden}
 canvas{width:100%;height:100%;touch-action:none;display:block}
-#winBox{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:99}
-#winBox div{background:#111;border:2px solid gold;padding:20px;border-radius:15px;text-align:center}
-button{padding:10px 25px;border:none;background:gold;border-radius:20px;font-weight:800;margin-top:10px}
+#winBox{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:999}
+#winBox div{background:#111;border:2px solid gold;padding:22px;border-radius:16px;text-align:center;max-width:300px}
+button{padding:11px 28px;border:none;background:gold;color:#000;border-radius:25px;font-weight:800;margin-top:12px;font-size:15px}
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="ad-slot">BANNER TOP - 5866325293</div>
-  <div class="header">LASER GO - Lvl <span id="lvl">1</span> | <span id="diff">Easy</span></div>
-  <div class="info"><span id="hint">Mirror 1 set karo</span><span>Coins: <span id="coins">100</span></span></div>
+  <div class="ad-slot">TOP BANNER - ca-app-pub-1225122052797144/5866325293</div>
+  <div class="header">LASER GO - Level <span id="lvl">1</span> | <span id="diff">Easy</span></div>
+  <div class="info"><span id="hint">Laser ko agle mirror tak le jao</span><span>Coins: <span id="coins">100</span> | Mirrors: <span id="mCount">5</span></span></div>
+  <div class="ad-slot">BANNER 2 - ca-app-pub-1225122052797144/5866325293</div>
   <div id="gameBox"><canvas id="c" width="360" height="520"></canvas></div>
-  <div class="ad-slot">VIDEO AD - 1240684575 - Har 3 Level Bad</div>
+  <div class="ad-slot">BANNER 3 - ca-app-pub-1225122052797144/5866325293</div>
+  <div class="ad-slot">VIDEO AD - ca-app-pub-1225122052797144/1240684575 - Har 3 Level Bad</div>
 </div>
-<div id="winBox"><div><h2 style="color:gold">Level Complete!</h2><p id="winText"></p><button onclick="nextLevel()">Next Level</button></div></div>
+
+<div id="winBox">
+  <div>
+    <h2 style="color:gold">Congratulations!</h2>
+    <p id="winText" style="margin-top:8px;font-size:14px"></p>
+    <p style="font-size:12px;color:#aaa;margin-top:6px">+5 Coins mil gaye</p>
+    <button onclick="nextLevel()">Next Level</button>
+  </div>
+</div>
 
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
+
 let level = parseInt(localStorage.getItem('lasergo_level')||'1');
 let coins = parseInt(localStorage.getItem('lasergo_coins')||'100');
 let mirrors = [];
 let blocks = [];
-let sun = {x:40, y:480};
-let target = {x:320, y:40, r:16};
+let sun = {x: 40, y: 480};
+let target = {x: 320, y: 40, r: 18};
 let activeChain = 0;
 let dragMirror = null;
 let isDragging = false;
 
 function getDifficulty(lvl){
   if(lvl<=50) return {tolerance: 0.985, label: 'Easy', blockCount: 0};
-  if(lvl<=200) return {tolerance: 0.991, label: 'Medium', blockCount: 1};
+  if(lvl<=200) return {tolerance: 0.992, label: 'Medium', blockCount: 1};
   if(lvl<=500) return {tolerance: 0.996, label: 'Hard', blockCount: 2};
-  return {tolerance: 0.998, label: 'Very Hard', blockCount: 3};
+  return {tolerance: 0.9985, label: 'Very Hard', blockCount: 3};
 }
-
 function getMirrorCount(lvl){ return 5 + Math.floor(lvl/100)*2; }
 
 function generate(){
   document.getElementById('lvl').innerText = level;
   document.getElementById('coins').innerText = coins;
   let diff = getDifficulty(level);
-  document.getElementById('diff').innerText = diff.label + ` (Need ${Math.round(diff.tolerance*1000)/10}% accuracy)`;
+  document.getElementById('diff').innerText = diff.label;
   let count = getMirrorCount(level);
+  document.getElementById('mCount').innerText = count;
+
   mirrors = [];
   blocks = [];
-
   for(let i=0;i<count;i++){
-    mirrors.push({x: 55+Math.random()*250, y: 80+Math.random()*350, angle: Math.random()*360, caught: false});
+    mirrors.push({
+      x: 60 + Math.random()*240,
+      y: 80 + Math.random()*350,
+      angle: Math.random()*360,
+      caught: false
+    });
   }
   for(let b=0;b<diff.blockCount;b++){
-    blocks.push({x: 80+Math.random()*200, y: 120+Math.random()*280, w: 12+Math.random()*25, h: 12+Math.random()*25});
+    blocks.push({x: 80+Math.random()*180, y: 120+Math.random()*260, w: 15+Math.random()*22, h: 15+Math.random()*22});
   }
   activeChain = 0;
-  updateHint();
+  document.getElementById('hint').innerText = "Laser ko agle mirror tak le jao";
   draw();
-}
-
-function updateHint(){
-  if(activeChain < mirrors.length){
-    document.getElementById('hint').innerText = `Mirror ${activeChain+1}/${mirrors.length} set karo - Long Press`;
-  } else {
-    document.getElementById('hint').innerText = `Ab Target par nishana lagao`;
-  }
 }
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // Blocks - Rukawaten
-  ctx.fillStyle='#331111'; ctx.strokeStyle='#ff4444';
+  // Blocks
   blocks.forEach(bl=>{
+    ctx.fillStyle='#2a1111';
+    ctx.strokeStyle='#ff3333';
+    ctx.lineWidth=1.5;
     ctx.fillRect(bl.x, bl.y, bl.w, bl.h);
     ctx.strokeRect(bl.x, bl.y, bl.w, bl.h);
   });
 
-  ctx.beginPath(); ctx.arc(sun.x,sun.y,13,0,Math.PI*2); ctx.fillStyle='gold'; ctx.shadowBlur=15; ctx.shadowColor='gold'; ctx.fill(); ctx.shadowBlur=0;
-  ctx.beginPath(); ctx.arc(target.x,target.y,target.r,0,Math.PI*2); ctx.fillStyle = activeChain===mirrors.length? '#00ff66' : '#334433'; ctx.shadowBlur = activeChain===mirrors.length? 15:0; ctx.shadowColor='#00ff66'; ctx.fill(); ctx.shadowBlur=0;
+  // Sun
+  ctx.beginPath(); ctx.arc(sun.x,sun.y,13,0,Math.PI*2);
+  ctx.fillStyle='gold'; ctx.shadowBlur=18; ctx.shadowColor='gold'; ctx.fill(); ctx.shadowBlur=0;
 
-  mirrors.forEach((m,i)=>{
-    ctx.save(); ctx.translate(m.x,m.y); ctx.rotate(m.angle*Math.PI/180);
+  // Target
+  ctx.beginPath(); ctx.arc(target.x,target.y,target.r,0,Math.PI*2);
+  ctx.fillStyle = activeChain===mirrors.length? '#00ff66' : '#2d4a2d';
+  ctx.shadowBlur = activeChain===mirrors.length? 18:0; ctx.shadowColor='#00ff66'; ctx.fill(); ctx.shadowBlur=0;
+
+  // Mirrors - White till caught, Golden after caught, No Numbers, No Blue Hint
+  mirrors.forEach((m)=>{
+    ctx.save();
+    ctx.translate(m.x,m.y);
+    ctx.rotate(m.angle*Math.PI/180);
     let grad = ctx.createRadialGradient(0,0,2,0,0,18);
-    if(m.caught){ grad.addColorStop(0,'#ffffcc'); grad.addColorStop(1,'#ffcc00'); }
-    else if(i===activeChain){ grad.addColorStop(0,'#aaffff'); grad.addColorStop(1,'#0088aa'); }
-    else { grad.addColorStop(0,'#ffffff'); grad.addColorStop(1,'#555'); }
-    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle = m.caught? 'gold' : (i===activeChain? '#00e5ff' : 'white');
-    ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-15,0); ctx.lineTo(15,0); ctx.stroke();
-    ctx.fillStyle='black'; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.fillText(i+1,0,4);
+    if(m.caught){
+      grad.addColorStop(0,'#ffffe0');
+      grad.addColorStop(0.4,'#ffde59');
+      grad.addColorStop(1,'#ff9900');
+    } else {
+      grad.addColorStop(0,'#ffffff');
+      grad.addColorStop(0.5,'#b0b0b0');
+      grad.addColorStop(1,'#6a6a6a');
+    }
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = m.caught? 'gold' : 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = m.caught? 2.5 : 1.8;
+    ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(14,0); ctx.stroke();
     ctx.restore();
   });
+
   drawLaserChain();
 }
 
 function isBlocked(x1,y1,x2,y2){
   for(let bl of blocks){
-    if(lineIntersectsRect(x1,y1,x2,y2, bl.x, bl.y, bl.w, bl.h)) return true;
+    // Simple check
+    if( Math.max(x1,x2) < bl.x || Math.min(x1,x2) > bl.x+bl.w || Math.max(y1,y2) < bl.y || Math.min(y1,y2) > bl.y+bl.h ) continue;
+    return true;
   }
   return false;
-}
-
-function lineIntersectsRect(x1,y1,x2,y2, rx,ry,rw,rh){
-  // Simple AABB line check
-  let minX = Math.min(x1,x2), maxX = Math.max(x1,x2);
-  let minY = Math.min(y1,y2), maxY = Math.max(y1,y2);
-  if(maxX < rx || minX > rx+rw || maxY < ry || minY > ry+rh) return false;
-  // Agar line rect ke andar se guzar rahi hai to block hai
-  return true;
 }
 
 function drawLaserChain(){
   if(mirrors.length===0) return;
   let pos = {x:sun.x, y:sun.y};
   let dir = null;
-  let diff = getDifficulty(level);
 
-  ctx.strokeStyle='red'; ctx.lineWidth=2.5; ctx.shadowBlur=6; ctx.shadowColor='red';
-  ctx.beginPath(); ctx.moveTo(pos.x,pos.y);
+  ctx.lineWidth=2.6;
+  ctx.shadowBlur=8;
+  ctx.shadowColor='red';
+  ctx.strokeStyle='red';
+  ctx.beginPath();
+  ctx.moveTo(pos.x,pos.y);
 
-  // Sirf caught mirrors tak laser dikhao
-  for(let i=0; i<activeChain; i++){
+  for(let i=0;i<activeChain;i++){
     let m = mirrors[i];
-    if(isBlocked(pos.x,pos.y, m.x, m.y)){ break; }
-    ctx.lineTo(m.x, m.y);
+    if(isBlocked(pos.x,pos.y,m.x,m.y)) break;
+    ctx.lineTo(m.x,m.y);
     let rad = m.angle*Math.PI/180;
     let normal = {x: -Math.sin(rad), y: Math.cos(rad)};
     let prevPos = i===0? sun : mirrors[i-1];
@@ -149,76 +171,108 @@ function drawLaserChain(){
   if(activeChain < mirrors.length){
     if(dir){
       ctx.moveTo(pos.x,pos.y);
-      ctx.lineTo(pos.x+dir.x*500, pos.y+dir.y*500);
-    } else if(activeChain===0){
-      // Pehle mirror ke liye halki guide line sun se
-      ctx.lineTo(mirrors[0].x, mirrors[0].y);
-      ctx.globalAlpha=0.15; ctx.stroke(); ctx.globalAlpha=1;
-      ctx.beginPath(); ctx.moveTo(sun.x,sun.y); ctx.lineTo(mirrors[0].x, mirrors[0].y);
+      ctx.lineTo(pos.x + dir.x*600, pos.y + dir.y*600);
     }
   } else {
     if(dir){
       ctx.moveTo(pos.x,pos.y);
       let toTarget = {x: target.x - pos.x, y: target.y - pos.y};
-      let dist = Math.hypot(toTarget.x,toTarget.y); toTarget.x/=dist; toTarget.y/=dist;
+      let dist = Math.hypot(toTarget.x,toTarget.y);
+      toTarget.x/=dist; toTarget.y/=dist;
+      let diff = getDifficulty(level);
       let align = dir.x*toTarget.x + dir.y*toTarget.y;
       if(align > diff.tolerance &&!isBlocked(pos.x,pos.y,target.x,target.y)){
         ctx.strokeStyle='#00ff66';
+        ctx.shadowColor='#00ff66';
         ctx.lineTo(target.x,target.y);
         ctx.stroke();
         ctx.shadowBlur=0;
-        setTimeout(win, 400);
+        setTimeout(win, 350);
         return;
       } else {
-        ctx.lineTo(pos.x+dir.x*500, pos.y+dir.y*500);
+        ctx.lineTo(pos.x + dir.x*600, pos.y + dir.y*600);
       }
     }
   }
-  ctx.stroke(); ctx.shadowBlur=0;
+  ctx.stroke();
+  ctx.shadowBlur=0;
 }
 
-function tryCatchOne(){
+function tryCatchSingle(){
   if(activeChain >= mirrors.length) return false;
-  let currMirror = mirrors[activeChain];
+  let curr = mirrors[activeChain];
   let prevPos = activeChain===0? sun : mirrors[activeChain-1];
-  let diff = getDifficulty(level);
 
-  let incoming = {x: currMirror.x - prevPos.x, y: currMirror.y - prevPos.y};
-  let l = Math.hypot(incoming.x,incoming.y); if(l<1) return false;
+  if(isBlocked(prevPos.x, prevPos.y, curr.x, curr.y)) return false;
+
+  let incoming = {x: curr.x - prevPos.x, y: curr.y - prevPos.y};
+  let l = Math.hypot(incoming.x,incoming.y);
+  if(l<1) return false;
   incoming.x/=l; incoming.y/=l;
 
-  let rad = currMirror.angle*Math.PI/180;
+  let rad = curr.angle*Math.PI/180;
   let normal = {x: -Math.sin(rad), y: Math.cos(rad)};
   let dotSide = Math.abs(incoming.x*normal.x + incoming.y*normal.y);
 
-  // Pehle mirror ke liye side check
-  if(dotSide < 0.10) return false; // side sahi nahi
-  if(isBlocked(prevPos.x, prevPos.y, currMirror.x, currMirror.y)) return false;
+  if(dotSide < 0.12) return false;
 
-  // Catch ho gaya - SIRF EK HI
-  if(!currMirror.caught){
-    currMirror.caught = true;
+  if(!curr.caught){
+    curr.caught = true;
     activeChain++;
-    updateHint();
+    if(activeChain < mirrors.length){
+      document.getElementById('hint').innerText = `Acha! Ab agla mirror dhoondo`;
+    } else {
+      document.getElementById('hint').innerText = `Sab catch! Ab Target par le jao`;
+    }
     if(navigator.vibrate) navigator.vibrate(40);
     return true;
   }
   return false;
 }
 
+function checkNextAimAndAutoCatch(){
+  if(activeChain===0 || activeChain>=mirrors.length) return;
+  let curr = mirrors[activeChain-1];
+  let next = mirrors[activeChain];
+  if(isBlocked(curr.x,curr.y,next.x,next.y)) return;
+
+  let rad = curr.angle*Math.PI/180;
+  let normal = {x: -Math.sin(rad), y: Math.cos(rad)};
+  let prevPos = activeChain-1===0? sun : mirrors[activeChain-2];
+  let incoming = {x: curr.x - prevPos.x, y: curr.y - prevPos.y};
+  let l = Math.hypot(incoming.x,incoming.y); incoming.x/=l; incoming.y/=l;
+  let dot = incoming.x*normal.x + incoming.y*normal.y;
+  let reflected = {x: incoming.x - 2*dot*normal.x, y: incoming.y - 2*dot*normal.y};
+
+  let toNext = {x: next.x - curr.x, y: next.y - curr.y};
+  let dist = Math.hypot(toNext.x,toNext.y); toNext.x/=dist; toNext.y/=dist;
+  let diff = getDifficulty(level);
+  let align = reflected.x*toNext.x + reflected.y*toNext.y;
+
+  if(align > diff.tolerance){
+    // SIRF TAB CATCH HOGA JAB USER NE KHUD AIM KIYA HO
+    // Yahan hum auto catch nahi karenge taa ke aap wali logic rahe
+    // Catch sirf tryCatchSingle se hoga jab user active mirror ko ghumayega
+  }
+}
+
 function win(){
-  document.getElementById('winText').innerText = `Level ${level} Complete! +5 Coins - Difficulty: ${getDifficulty(level).label}`;
+  document.getElementById('winText').innerText = `Level ${level} Mukammal! Difficulty: ${getDifficulty(level).label}`;
   document.getElementById('winBox').style.display='flex';
-  coins+=5; localStorage.setItem('lasergo_coins', coins);
+  coins+=5;
+  localStorage.setItem('lasergo_coins', coins);
+  document.getElementById('coins').innerText = coins;
 }
 
 function nextLevel(){
   document.getElementById('winBox').style.display='none';
-  level++; localStorage.setItem('lasergo_level', level);
+  level++;
+  localStorage.setItem('lasergo_level', level);
   let played = parseInt(localStorage.getItem('playedSinceAd')||'0')+1;
   localStorage.setItem('playedSinceAd', played);
   if(played>=3){
-    console.log('SHOW VIDEO AD 1240684575');
+    console.log('SHOW VIDEO AD: ca-app-pub-1225122052797144/1240684575');
+    // Yahan aapka AdMob Video Ad ka code chalega
     localStorage.setItem('playedSinceAd','0');
   }
   generate();
@@ -226,38 +280,54 @@ function nextLevel(){
 
 function getPos(e){
   let r = canvas.getBoundingClientRect();
-  let cx = e.touches?e.touches[0].clientX:e.clientX;
-  let cy = e.touches?e.touches[0].clientY:e.clientY;
+  let cx = e.touches? e.touches[0].clientX : e.clientX;
+  let cy = e.touches? e.touches[0].clientY : e.clientY;
   return {x:(cx-r.left)*(canvas.width/r.width), y:(cy-r.top)*(canvas.height/r.height)};
 }
 
 canvas.addEventListener('touchstart', e=>{
   let p=getPos(e);
-  mirrors.forEach(m=>{ if(Math.hypot(p.x-m.x,p.y-m.y)<32){ dragMirror=m; isDragging=true; }});
+  mirrors.forEach(m=>{
+    if(Math.hypot(p.x-m.x, p.y-m.y)<32){
+      dragMirror=m;
+      isDragging=true;
+    }
+  });
 });
 
 canvas.addEventListener('touchmove', e=>{
   if(!isDragging ||!dragMirror) return;
   e.preventDefault();
-  // BOHAT SLOW MOVEMENT - 0.7 degree only
-  dragMirror.angle += 0.7;
+  dragMirror.angle += 0.7; // BOHAT SLOW
   if(dragMirror.angle>=360) dragMirror.angle-=360;
-  // Har move par check karo kya ye active wala mirror catch ho sakta hai
+
+  // Sirf active wala mirror hi catch ho sakta hai
   if(dragMirror === mirrors[activeChain]){
-    tryCatchOne();
+    if(tryCatchSingle()){
+      draw();
+      return;
+    }
+  }
+  // Agar active chain ka last mirror ghum raha hai to check karo agle ke liye aim sahi hai ya nahi
+  if(activeChain>0 && dragMirror === mirrors[activeChain-1]){
+    // Agla mirror catch karne ke liye user ko agle mirror ko ghumana padega, isko nahi
+    // Is liye yahan kuch nahi karna
   }
   draw();
 },{passive:false});
 
-canvas.addEventListener('touchend', ()=>{ isDragging=false; dragMirror=null; });
+canvas.addEventListener('touchend', ()=>{ isDragging=false; dragMirror=null; draw(); });
+
 canvas.addEventListener('mousedown', e=>{
   let p=getPos(e);
-  mirrors.forEach(m=>{ if(Math.hypot(p.x-m.x,p.y-m.y)<32){ dragMirror=m; isDragging=true; }});
+  mirrors.forEach(m=>{ if(Math.hypot(p.x-m.x, p.y-m.y)<32){ dragMirror=m; isDragging=true; }});
 });
 canvas.addEventListener('mousemove', e=>{
   if(!isDragging ||!dragMirror) return;
   dragMirror.angle += 0.7;
-  if(dragMirror === mirrors[activeChain]) tryCatchOne();
+  if(dragMirror === mirrors[activeChain]){
+    tryCatchSingle();
+  }
   draw();
 });
 canvas.addEventListener('mouseup', ()=>{ isDragging=false; dragMirror=null; });
