@@ -37,6 +37,8 @@ canvas{width:100%;height:100%;touch-action:none;display:block}
   <div class="btns">
     <button onclick="generate()">Restart Level</button>
     <button onclick="showHint()">Hint -5 Coins</button>
+<button onclick="showCoinAdPopup()">ویڈیو دیکھیں 5 کوائن</button>
+    
   </div>
 
   <div class="ad-slot">BANNER 5 - BUTTONS KE NICHE - 5866325293</div>
@@ -48,6 +50,14 @@ canvas{width:100%;height:100%;touch-action:none;display:block}
   <p style="font-size:13px;margin:10px">videoad2 - ca-app-pub-1225122052797144/2278519790 - Full Screen</p>
   <p id="adTimer" style="color:#aaa">5 sec...</p>
   <button onclick="closeVideoAd()" style="padding:10px 25px;background:gold;border:none;border-radius:20px;margin-top:15px;font-weight:800">Skip Ad</button>
+</div>
+
+<div id="coinAdOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; text-align:center; padding-top:100px;">
+  <h2 style="color:gold">videoad3 - 5 Coin Reward</h2>
+  <p style="color:white">ویڈیو دیکھیں اور 5 کوائن حاصل کریں</p>
+  <p id="coinAdTimer" style="color:#aaa">30s</p>
+  <button onclick="watchCoinAd()">ویڈیو دیکھیں</button>
+  <button onclick="closeCoinAd()" style="margin-top:20px">بند کریں</button>
 </div>
 
 <div id="winBox" style="position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:999">
@@ -70,6 +80,23 @@ function generate(){
   for(let b=0;b<diff.blockCount;b++) blocks.push({x:80+Math.random()*180,y:100+Math.random()*220,w:15+Math.random()*22,h:15+Math.random()*22});
   activeChain=0; draw();
 }
+  // videoad3 5 Coin System
+function showCoinAdPopup(){
+  document.getElementById("coinAdOverlay").style.display="block";
+}
+function closeCoinAd(){
+  document.getElementById("coinAdOverlay").style.display="none";
+}
+function watchCoinAd(){
+  let coins = parseInt(localStorage.getItem("coins")||"0");
+  coins += 5;
+  localStorage.setItem("coins", coins);
+  alert("مبارک ہو! 5 کوائن مل گئے - ID: 3671492510");
+  closeCoinAd();
+  // اگر آپ کے پاس کوائن شو کرنے والا کوئی element ہے تو یہ اپڈیٹ کر دے گا
+  location.reload();
+}
+  
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   blocks.forEach(bl=>{ ctx.fillStyle='#2a1111'; ctx.strokeStyle='#ff3333'; ctx.fillRect(bl.x,bl.y,bl.w,bl.h); ctx.strokeRect(bl.x,bl.y,bl.w,bl.h); });
