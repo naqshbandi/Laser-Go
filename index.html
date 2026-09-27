@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Sun - Elite Optic Puzzle</title>
+    <title>Laser Sun</title>
     
-    <meta name="theme-color" content="#020205">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <style>
         * {
             box-sizing: border-box;
@@ -50,25 +46,14 @@
             background: linear-gradient(145deg, rgba(20, 20, 40, 0.9), rgba(10, 10, 20, 0.95));
             padding: 25px;
             border-radius: 24px;
-            box-shadow: 0 0 60px rgba(0, 243, 255, 0.2), inset 0 0 15px rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 60px rgba(0, 243, 255, 0.2);
             border: 2px solid #2a2a5a;
             max-width: 420px;
             width: 100%;
         }
         
-        h1 { color: #ffd700; font-size: 24px; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255,215,0,0.6); }
+        h1 { color: #ffd700; font-size: 24px; margin-bottom: 15px; }
         p { font-size: 13px; color: #b0b0d0; margin-bottom: 20px; line-height: 1.6; }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 12px;
-            color: #00ffcc;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .checkbox-container input { width: 18px; height: 18px; accent-color: #ffd700; cursor: pointer; }
 
         .btn {
             background: linear-gradient(135deg, #ffd700, #ff8c00);
@@ -79,16 +64,12 @@
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
             width: 100%;
             margin-top: 12px;
-            transition: 0.2s;
         }
-        .btn:hover { transform: scale(1.02); }
         .btn-secondary {
             background: linear-gradient(135deg, #00f3ff, #0066ff);
             color: #fff;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
         }
 
         #ad-overlay, #win-popup {
@@ -111,9 +92,6 @@
             border-radius: 20px;
             max-width: 350px;
             width: 100%;
-            box-shadow: 0 0 50px rgba(255,215,0,0.4);
-            position: relative;
-            overflow: hidden;
         }
 
         .game-container {
@@ -121,7 +99,6 @@
             background: linear-gradient(145deg, #0d0d24, #060612);
             padding: 16px;
             border-radius: 24px;
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
             border: 2px solid #2a2a5a;
             max-width: 420px;
             width: 100%;
@@ -145,7 +122,6 @@
             background-color: #030308;
             border-radius: 16px;
             border: 2px solid #00f3ff;
-            box-shadow: inset 0 0 30px rgba(0, 243, 255, 0.3);
             display: block;
             margin: 0 auto 10px auto;
             cursor: pointer;
@@ -164,11 +140,6 @@
             color: #ff3366;
             min-height: 22px;
             margin-bottom: 8px;
-        }
-        .instructions {
-            font-size: 10px;
-            color: #9a9ac0;
-            margin-bottom: 10px;
         }
         .btn-group {
             display: flex;
@@ -195,13 +166,11 @@
         </div>
     </div>
 
-    <!-- CONGRATULATIONS FIREWORKS POPUP -->
+    <!-- CONGRATULATIONS POPUP -->
     <div id="win-popup">
         <div class="win-box">
-            <canvas id="fireworksCanvas" width="300" height="110" style="background:transparent; border:none; box-shadow:none; margin-bottom:5px;"></canvas>
             <h2 style="color:#ffd700; font-size:20px; margin-bottom:5px;">🎉 Congratulations! 🎉</h2>
-            <p style="font-size:12px; color:#00ffcc; margin-bottom:15px;">Level Cleared!<br><b>+5 🪙 Coins Added</b> (Withdraw at 50,000 Coins)</p>
-            
+            <p style="font-size:12px; color:#00ffcc; margin-bottom:15px;">Level Cleared!<br><b>+5 🪙 Coins Added</b></p>
             <button class="btn" style="margin-top:0; font-size:13px;" onclick="goToNextLevelFromPopup()">⏭️ Next Level</button>
             <button class="btn small-btn" style="background:#333; color:#ccc; width:100%; margin-top:8px;" onclick="closeWinPopup()">Main Menu</button>
         </div>
@@ -210,42 +179,9 @@
     <!-- SCREEN 1: WELCOME -->
     <div id="screen-welcome" class="screen active">
         <div class="box">
-            <h1>☀️ Quantum Sun Elite</h1>
-            <p>Master 1000+ elite puzzle levels within 5 minutes per level, earn coins, and cash out!</p>
-            
-            <div class="checkbox-container">
-                <input type="checkbox" id="agreeCheck">
-                <label for="agreeCheck">I agree to Terms & Conditions and Game Policies.</label>
-            </div>
-
-            <button class="btn" onclick="proceedToModeSelect()">Next</button>
-            <button class="btn btn-secondary" id="installBtn" style="display:none;" onclick="triggerInstall()">📱 Install Game App</button>
-        </div>
-    </div>
-
-    <!-- SCREEN 2: MODES -->
-    <div id="screen-mode" class="screen">
-        <div class="box">
-            <h1>🎮 Game Modes</h1>
-            <p>Select your gameplay challenge. CPU Battle requires 50,000 Coins!</p>
-            
-            <button class="btn" onclick="startGameMode('cpu')">🤖 Play vs CPU Battle (Need 50,000 🪙)</button>
-            <button class="btn btn-secondary" onclick="startGameMode('solo')">🧩 Classic Campaign (+5 🪙 / Level)</button>
-            <button class="btn" style="background: linear-gradient(135deg, #ff0055, #990033); color: #fff;" onclick="openSettings()">⚙️ Settings & Stats</button>
-        </div>
-    </div>
-
-    <!-- SCREEN 3: SETTINGS -->
-    <div id="screen-settings" class="screen">
-        <div class="box">
-            <h1>⚙️ Profile & Settings</h1>
-            <p>Manage your account progress and online status preferences.</p>
-            <div style="text-align: left; font-size: 13px; margin-bottom: 20px; color: #00f3ff; line-height: 1.8;">
-                <p>• Player: <b>Master_Tailor_Adnan</b></p>
-                <p>• Status: <span style="color:#00ff66;">Online Server Connected</span></p>
-                <p>• Total Coins: <span id="settingCoins" style="color:#ffd700;">100</span> 🪙 (Withdraw at 50,000)</p>
-            </div>
-            <button class="btn" onclick="backToModeSelect()">Back to Menu</button>
+            <h1>☀️ Laser Sun</h1>
+            <p>Guide the laser beam through <b>ALL</b> mirrors before hitting the target core!</p>
+            <button class="btn" onclick="showScreen('screen-game'); initLevel();">Play Game</button>
         </div>
     </div>
 
@@ -253,50 +189,52 @@
     <div id="screen-game" class="screen">
         <div class="game-container">
             <div class="header">
-                <span id="levelText">Level: 1 / 1000</span>
+                <span id="levelText">Level: 1</span>
                 <span id="coinText">🪙 Coins: 100</span>
             </div>
             
             <div class="timer-bar" id="timerDisplay">⏳ Time Left: 05:00</div>
             
             <div class="stats-bar">
-                <span id="mirrorCountText">Mirrors: 3</span>
-                <span id="fixedCountText">Fixed: 1</span>
+                <span id="mirrorCountText">Mirrors: 2</span>
                 <span id="keyStatus">🔒 Core: Locked</span>
             </div>
             
-            <canvas id="gameCanvas" width="380" height="270"></canvas>
+            <canvas id="gameCanvas" width="380" height="250"></canvas>
             
-            <div class="status-msg" id="statusMsg">Align hidden mirrors & hit green target!</div>
-            <div class="instructions" id="modeInfoMsg">Mode: Classic Campaign</div>
+            <div class="status-msg" id="statusMsg">Pass laser through all mirrors to win!</div>
             
             <div class="btn-group">
                 <button class="btn small-btn" onclick="resetLevelWithTracking()" style="background:#cc8800; color:#fff;">🔄 Reset</button>
                 <button class="btn small-btn" id="nextLevelBtn" onclick="nextLevel()" style="background:#00aa55; color:#fff; display:none;">⏭️ Next Level</button>
-                <button class="btn small-btn" style="background:#ff3366; color:#fff;" onclick="backToModeSelect()">Menu</button>
+                <button class="btn small-btn" style="background:#ff3366; color:#fff;" onclick="showScreen('screen-welcome')">Menu</button>
             </div>
         </div>
     </div>
 
     <script>
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installBtn').style.display = 'block';
-        });
-
-        function triggerInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-            }
-        }
-
-        let lastActivityTime = Date.now();
-        let levelsCompletedCount = 0; 
-        let resetAttemptsCount = 0; // Tracks failed resets/tries
+        let currentLevel = 1;
+        let coins = 100;
+        let levelClearedFlag = false;
+        let levelsCompletedCount = 0;
+        let resetAttemptsCount = 0;
+        let timeLeftSeconds = 300;
+        let levelTimer = null;
         let adCallback = null;
+
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let laserSource = { x: 30, y: 125, angle: 0 };
+        let targetCore = { x: 350, y: 125, radius: 12 };
+        let mirrors = [];
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if(screenId === 'screen-game') initLevel();
+            else stopTimer();
+        }
 
         function triggerAd(callback) {
             adCallback = callback;
@@ -306,7 +244,6 @@
             let skipBtn = document.getElementById('skipAdBtn');
             skipBtn.disabled = true;
             skipBtn.style.opacity = "0.5";
-            skipBtn.style.cursor = "not-allowed";
 
             let countdown = setInterval(() => {
                 timeLeft--;
@@ -322,101 +259,26 @@
 
         function closeAd() {
             document.getElementById('ad-overlay').style.display = 'none';
-            lastActivityTime = Date.now();
             if (adCallback) adCallback();
-        }
-
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            lastActivityTime = Date.now();
-        }
-
-        function proceedToModeSelect() {
-            if (!document.getElementById('agreeCheck').checked) {
-                alert("Please accept the terms and conditions.");
-                return;
-            }
-            triggerAd(() => { showScreen('screen-mode'); });
-        }
-
-        function openSettings() { 
-            document.getElementById('settingCoins').innerText = coins;
-            showScreen('screen-settings'); 
-        }
-        function backToModeSelect() { 
-            stopTimer();
-            showScreen('screen-mode'); 
-        }
-
-        let currentLevel = 1;
-        let maxUnlockedLevel = 1;
-        let coins = 100;
-        let levelClearedFlag = false;
-        
-        // 5 Minutes Timer variables
-        let timeLeftSeconds = 300;
-        let levelTimer = null;
-
-        function startGameMode(mode) {
-            lastActivityTime = Date.now();
-            if (mode === 'cpu') {
-                if (coins < 50000) {
-                    alert("CPU Hardcore Battle requires 50,000 🪙! Play campaign levels to collect coins.");
-                    return;
-                }
-                coins -= 50000;
-                document.getElementById('modeInfoMsg').innerText = "Mode: CPU Hardcore Battle";
-            } else {
-                document.getElementById('modeInfoMsg').innerText = "Mode: Classic Campaign (+5 🪙 per level)";
-            }
-            showScreen('screen-game');
-            initLevel();
-        }
-
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        let sunSource = { x: 40, y: 135, radius: 20, angle: 0 };
-        let targetCore = { x: 340, y: 135, radius: 14 };
-        let mirrors = [];
-
-        function getMirrorCountForLevel(lvl) {
-            if (lvl <= 10) return 3;
-            if (lvl <= 20) return 5;
-            if (lvl <= 30) return 6;
-            if (lvl <= 40) return 7;
-            if (lvl <= 50) return 8;
-            if (lvl <= 100) return 9;
-            let extraBlocks = Math.floor((lvl - 101) / 100) + 1;
-            return Math.min(9 + (extraBlocks * 2), 31);
-        }
-
-        function getFixedMirrorCountForLevel(lvl) {
-            if (lvl <= 100) return 1;
-            return Math.min(Math.floor((lvl - 1) / 100) + 1, 10);
         }
 
         function startTimer() {
             stopTimer();
-            timeLeftSeconds = 300; // 5 Minutes
+            timeLeftSeconds = 300;
             updateTimerDisplay();
             levelTimer = setInterval(() => {
                 timeLeftSeconds--;
                 updateTimerDisplay();
                 if (timeLeftSeconds <= 0) {
                     stopTimer();
-                    alert("⏰ Time's up! 5 minutes passed without achieving the target. Game Over for this level!");
-                    initLevel(); // Restart level on timeout
+                    alert("⏰ Time's up! Try again.");
+                    initLevel();
                 }
             }, 1000);
         }
 
         function stopTimer() {
-            if (levelTimer) {
-                clearInterval(levelTimer);
-                levelTimer = null;
-            }
+            if (levelTimer) { clearInterval(levelTimer); levelTimer = null; }
         }
 
         function updateTimerDisplay() {
@@ -428,34 +290,24 @@
         function initLevel() {
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
-
-            let totalMirrors = getMirrorCountForLevel(currentLevel);
-            let fixedCount = getFixedMirrorCountForLevel(currentLevel);
+            
+            // As levels increase, number of mirrors increases (e.g., Level 1-2 = 2 mirrors, Level 3-5 = 3 mirrors, etc.)
+            let totalMirrors = Math.min(2 + Math.floor(currentLevel / 2), 7);
             mirrors = [];
 
-            for (let i = 0; i < totalMirrors; i++) {
-                let col = i % 5;
-                let row = Math.floor(i / 5);
-                let posX = 70 + col * 55 + ((currentLevel * (i + 3)) % 15);
-                let posY = 40 + row * 45 + ((currentLevel * (i + 7)) % 15);
-
-                posX = Math.max(50, Math.min(330, posX));
-                posY = Math.max(35, Math.min(240, posY));
-
-                let isFixed = i < fixedCount;
-                let targetAngle = (isFixed ? (1.2 + ((currentLevel + i) % 4) * 0.5) : 0);
-
+            for(let i = 0; i < totalMirrors; i++) {
                 mirrors.push({
-                    x: posX, y: posY, radius: 15,
-                    angle: (i * 0.7 + currentLevel * 0.2) % 6.28,
-                    isFixed: isFixed, targetAngle: targetAngle
+                    x: 90 + (i * 45) + (i % 2 * 15),
+                    y: 60 + ((i * 50) % 130),
+                    radius: 14,
+                    angle: Math.random() * 3,
+                    hit: false
                 });
             }
 
-            document.getElementById("levelText").innerText = `Level: ${currentLevel} / 1000`;
+            document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
             document.getElementById("coinText").innerText = `🪙 Coins: ${coins}`;
-            document.getElementById("mirrorCountText").innerText = `Mirrors: ${totalMirrors}`;
-            document.getElementById("fixedCountText").innerText = `Fixed: ${fixedCount}`;
+            document.getElementById("mirrorCountText").innerText = `Mirrors: ${mirrors.length}`;
             
             draw();
             startTimer();
@@ -466,151 +318,112 @@
             if (resetAttemptsCount >= 3) {
                 resetAttemptsCount = 0;
                 stopTimer();
-                triggerAd(() => {
-                    initLevel();
-                });
+                triggerAd(() => { initLevel(); });
             } else {
                 initLevel();
             }
         }
 
-        function traceLaserBeam() {
-            let rayX = sunSource.x + Math.cos(sunSource.angle) * sunSource.radius;
-            let rayY = sunSource.y + Math.sin(sunSource.angle) * sunSource.radius;
-            let rayAngle = sunSource.angle;
+        function traceLaser() {
+            // Reset hit status for all mirrors before tracing
+            mirrors.forEach(m => m.hit = false);
+
+            let rx = laserSource.x;
+            let ry = laserSource.y;
+            let rAngle = laserSource.angle;
             
-            let path = [{x: sunSource.x, y: sunSource.y}, {x: rayX, y: rayY}];
+            let path = [{x: rx, y: ry}];
             let hitTarget = false;
-            let fixedCriteriaMet = true;
 
-            for (let step = 0; step < 500; step++) {
-                rayX += Math.cos(rayAngle) * 3;
-                rayY += Math.sin(rayAngle) * 3;
+            for (let step = 0; step < 400; step++) {
+                rx += Math.cos(rAngle) * 4;
+                ry += Math.sin(rAngle) * 4;
+                path.push({x: rx, y: ry});
 
-                if (rayX < 0 || rayX > canvas.width || rayY < 0 || rayY > canvas.height) {
-                    path.push({x: rayX, y: rayY});
-                    break;
-                }
-                path.push({x: rayX, y: rayY});
+                if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
 
-                let distToTarget = Math.hypot(rayX - targetCore.x, rayY - targetCore.y);
-                if (distToTarget < targetCore.radius) {
+                // Check target hit
+                if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
                     hitTarget = true;
                     break;
                 }
 
+                // Check mirrors collision
                 for (let m of mirrors) {
-                    let distToMirror = Math.hypot(rayX - m.x, rayY - m.y);
-                    if (distToMirror < m.radius) {
-                        let hitAngle = Math.atan2(rayY - m.y, rayX - m.x);
-                        rayAngle = 2 * hitAngle - rayAngle - Math.PI;
-
-                        if (m.isFixed) {
-                            let angleDiff = Math.abs((m.angle % 6.28) - (m.targetAngle % 6.28));
-                            if (angleDiff > 0.35 && angleDiff < 5.9) {
-                                fixedCriteriaMet = false;
-                            }
-                        }
-                        rayX += Math.cos(rayAngle) * 10;
-                        rayY += Math.sin(rayAngle) * 10;
+                    if (Math.hypot(rx - m.x, ry - m.y) < m.radius) {
+                        m.hit = true; // Mark this mirror as touched by laser
+                        let normal = m.angle;
+                        rAngle = 2 * normal - rAngle - Math.PI;
+                        rx += Math.cos(rAngle) * 8;
+                        ry += Math.sin(rAngle) * 8;
                         break;
                     }
                 }
                 if (hitTarget) break;
             }
-            return { path, hitTarget, fixedCriteriaMet };
+
+            // Verify if ALL mirrors were hit by the laser
+            let allMirrorsHit = mirrors.every(m => m.hit);
+            let success = hitTarget && allMirrorsHit;
+
+            return { path, success, hitTarget, allMirrorsHit };
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.strokeStyle = "#0b0b20";
+            ctx.strokeStyle = "#151530";
             ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 35) {
+            for (let i = 0; i < canvas.width; i += 30) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
             }
 
-            let result = traceLaserBeam();
-            let successCondition = result.hitTarget && result.fixedCriteriaMet;
+            let result = traceLaser();
 
-            ctx.strokeStyle = successCondition ? "#00ffcc" : "#ffd700";
-            ctx.shadowColor = ctx.strokeStyle;
-            ctx.shadowBlur = 16;
-            ctx.lineWidth = 4;
+            // Draw Laser Beam (Cyan if successful, Red if incomplete)
+            ctx.strokeStyle = result.success ? "#00ffcc" : "#ff3366";
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(result.path[0].x, result.path[0].y);
-            for (let i = 1; i < result.path.length; i++) {
-                ctx.lineTo(result.path[i].x, result.path[i].y);
-            }
+            ctx.moveTo(laserSource.x, laserSource.y);
+            result.path.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
-            ctx.shadowBlur = 0;
 
-            let grad = ctx.createRadialGradient(sunSource.x, sunSource.y, 3, sunSource.x, sunSource.y, sunSource.radius);
-            grad.addColorStop(0, "#ffffff");
-            grad.addColorStop(0.3, "#ffd700");
-            grad.addColorStop(1, "#ff4500");
-            ctx.fillStyle = grad;
-            ctx.shadowColor = "#ffd700";
-            ctx.shadowBlur = 18;
+            // Draw Laser Source
+            ctx.fillStyle = "#ffaa00";
             ctx.beginPath();
-            ctx.arc(sunSource.x, sunSource.y, sunSource.radius, 0, Math.PI * 2);
+            ctx.arc(laserSource.x, laserSource.y, 14, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
 
-            ctx.fillStyle = successCondition ? "#00ffcc" : "#00ff66";
-            ctx.shadowColor = "#00ff66";
-            ctx.shadowBlur = 18;
+            // Draw Target Core
+            ctx.fillStyle = result.success ? "#00ffcc" : "#00aa55";
             ctx.beginPath();
             ctx.arc(targetCore.x, targetCore.y, targetCore.radius, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
 
+            // Draw Mirrors (Green border if hit, Red border if missed)
             mirrors.forEach(m => {
                 ctx.save();
                 ctx.translate(m.x, m.y);
                 ctx.rotate(m.angle);
-
-                ctx.fillStyle = "#8888aa";
-                ctx.shadowColor = "#00f3ff";
-                ctx.shadowBlur = 5;
-                ctx.beginPath();
-                ctx.arc(0, 0, m.radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = "#d0f0ff";
-                ctx.beginPath();
-                ctx.arc(0, 0, m.radius - 2.5, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(-m.radius/2, -2);
-                ctx.lineTo(m.radius/2, -2);
-                ctx.stroke();
-
+                ctx.fillStyle = m.hit ? "#00ffcc" : "#ff3366";
+                ctx.fillRect(-m.radius, -3, m.radius * 2, 6);
                 ctx.restore();
             });
 
-            document.getElementById("keyStatus").innerHTML = successCondition ? "🔓 Core: Aligned" : "🔒 Core: Locked";
+            document.getElementById("keyStatus").innerHTML = result.success ? "🔓 Core: All Mirrors Hit" : "🔒 Core: Mirrors Missing";
 
-            if (successCondition && !levelClearedFlag) {
+            if (result.success && !levelClearedFlag) {
                 levelClearedFlag = true;
                 stopTimer();
                 coins += 5;
-                if (currentLevel > maxUnlockedLevel) {
-                    maxUnlockedLevel = currentLevel;
-                }
                 document.getElementById("coinText").innerText = `🪙 Coins: ${coins}`;
-                
                 document.getElementById('nextLevelBtn').style.display = "block";
                 document.getElementById("statusMsg").style.color = "#00ffcc";
                 document.getElementById("statusMsg").innerText = `SUCCESS! Level Cleared (+5 🪙)`;
 
                 levelsCompletedCount++;
-                resetAttemptsCount = 0; // Reset failure tracking on success
-                
+                resetAttemptsCount = 0;
+
                 setTimeout(() => {
                     if (levelsCompletedCount % 3 === 0) {
                         triggerAd(() => { showWinPopup(); });
@@ -618,12 +431,6 @@
                         showWinPopup();
                     }
                 }, 800);
-            } else if (result.hitTarget && !result.fixedCriteriaMet) {
-                document.getElementById("statusMsg").style.color = "#ff3366";
-                document.getElementById("statusMsg").innerText = "Hidden required mirror direction is incorrect!";
-            } else if (!successCondition) {
-                document.getElementById("statusMsg").style.color = "#ffd700";
-                document.getElementById("statusMsg").innerText = "Rotate mirrors to discover alignments!";
             }
         }
 
@@ -632,78 +439,32 @@
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
 
-            let closest = null;
-            let minDist = 30;
             mirrors.forEach(m => {
-                let dist = Math.hypot(mouseX - m.x, mouseY - m.y);
-                if (dist < minDist) { minDist = dist; closest = m; }
+                if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
+                    m.angle += 0.4; 
+                    draw();
+                }
             });
-
-            if (closest) {
-                closest.angle += 0.45;
-                draw();
-            }
         });
 
         function nextLevel() {
-            if (currentLevel <= maxUnlockedLevel && currentLevel < 1000) {
-                currentLevel++;
-                initLevel();
-            } else {
-                alert("Complete the current level first to unlock the next level!");
-            }
+            currentLevel++;
+            initLevel();
         }
 
         function goToNextLevelFromPopup() {
             document.getElementById('win-popup').style.display = 'none';
-            if (currentLevel < 1000) {
-                currentLevel++;
-            }
+            currentLevel++;
             initLevel();
         }
 
         function closeWinPopup() {
             document.getElementById('win-popup').style.display = 'none';
-            backToModeSelect();
+            showScreen('screen-welcome');
         }
-
-        // Fireworks Animation in Win Popup
-        const fwCanvas = document.getElementById("fireworksCanvas");
-        const fwCtx = fwCanvas.getContext("2d");
-        let particles = [];
 
         function showWinPopup() {
             document.getElementById('win-popup').style.display = 'flex';
-            particles = [];
-            for(let i=0; i<45; i++) {
-                particles.push({
-                    x: fwCanvas.width / 2,
-                    y: fwCanvas.height / 2,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    color: ['#ffd700', '#00ffcc', '#ff3366', '#00f3ff'][Math.floor(Math.random()*4)],
-                    life: 50
-                });
-            }
-            requestAnimationFrame(animateFireworks);
-        }
-
-        function animateFireworks() {
-            if (document.getElementById('win-popup').style.display !== 'flex') return;
-            fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-            particles.forEach((p, index) => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                fwCtx.fillStyle = p.color;
-                fwCtx.beginPath();
-                fwCtx.arc(p.x, p.y, 3, 0, Math.PI*2);
-                fwCtx.fill();
-                if(p.life <= 0) particles.splice(index, 1);
-            });
-            if(particles.length > 0) {
-                requestAnimationFrame(animateFireworks);
-            }
         }
     </script>
 </body>
