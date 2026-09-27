@@ -287,11 +287,11 @@
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
             
-            // Setting exact target angle index for the third mirror to ensure it reaches the target core precisely
+            // Updated target angle index for the third mirror to accurately reflect the laser towards the target core
             mirrors = [
                 { x: 40,  y: 80,  width: 32, height: 10, angleIndex: 1, targetAngleIndex: 1, hit: false },
                 { x: 210, y: 80,  width: 32, height: 10, angleIndex: 3, targetAngleIndex: 3, hit: false },
-                { x: 210, y: 190, width: 32, height: 10, angleIndex: 2, targetAngleIndex: 6, hit: false }
+                { x: 210, y: 190, width: 32, height: 10, angleIndex: 0, targetAngleIndex: 2, hit: false }
             ];
 
             document.getElementById("levelText").innerText = `Level: ${currentLevel}`;
