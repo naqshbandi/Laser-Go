@@ -67,10 +67,6 @@
             width: 100%;
             margin-top: 12px;
         }
-        .btn-secondary {
-            background: linear-gradient(135deg, #00f3ff, #0066ff);
-            color: #fff;
-        }
 
         #ad-overlay, #win-popup {
             display: none;
@@ -156,7 +152,7 @@
 </head>
 <body>
 
-    <!-- 30 SECONDS AD OVERLAY -->
+    <!-- AD OVERLAY -->
     <div id="ad-overlay">
         <div class="ad-box">
             <h2 style="color:#ffd700; margin-bottom:10px;">📺 Sponsor Advertisement</h2>
@@ -166,7 +162,7 @@
         </div>
     </div>
 
-    <!-- CONGRATULATIONS POPUP -->
+    <!-- WIN POPUP -->
     <div id="win-popup">
         <div class="win-box">
             <h2 style="color:#ffd700; font-size:20px; margin-bottom:5px;">🎉 Congratulations! 🎉</h2>
@@ -180,12 +176,12 @@
     <div id="screen-welcome" class="screen active">
         <div class="box">
             <h1>☀️ Laser Sun</h1>
-            <p>Guide the laser beam through <b>ALL</b> mirrors before hitting the target core!</p>
+            <p>Align all mirrors to their precise target angles to pass the laser through every mirror successfully!</p>
             <button class="btn" onclick="showScreen('screen-game'); initLevel();">Play Game</button>
         </div>
     </div>
 
-    <!-- SCREEN 4: GAMEPLAY -->
+    <!-- SCREEN 2: GAMEPLAY -->
     <div id="screen-game" class="screen">
         <div class="game-container">
             <div class="header">
@@ -196,13 +192,13 @@
             <div class="timer-bar" id="timerDisplay">⏳ Time Left: 05:00</div>
             
             <div class="stats-bar">
-                <span id="mirrorCountText">Mirrors: 2</span>
+                <span id="mirrorCountText">Mirrors: 3</span>
                 <span id="keyStatus">🔒 Core: Locked</span>
             </div>
             
             <canvas id="gameCanvas" width="380" height="250"></canvas>
             
-            <div class="status-msg" id="statusMsg">Pass laser through all mirrors to win!</div>
+            <div class="status-msg" id="statusMsg">Click mirrors to rotate into exact fixed angles!</div>
             
             <div class="btn-group">
                 <button class="btn small-btn" onclick="resetLevelWithTracking()" style="background:#cc8800; color:#fff;">🔄 Reset</button>
@@ -225,8 +221,8 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        let laserSource = { x: 30, y: 125, angle: 0 };
-        let targetCore = { x: 350, y: 125, radius: 12 };
+        let laserSource = { x: 30, y: 210, angle: -0.78 }; 
+        let targetCore = { x: 340, y: 40, radius: 12 };
         let mirrors = [];
 
         function showScreen(screenId) {
@@ -291,16 +287,32 @@
             levelClearedFlag = false;
             document.getElementById('nextLevelBtn').style.display = "none";
             
-            // As levels increase, number of mirrors increases (e.g., Level 1-2 = 2 mirrors, Level 3-5 = 3 mirrors, etc.)
-            let totalMirrors = Math.min(2 + Math.floor(currentLevel / 2), 7);
-            mirrors = [];
+            // Mirror count increases based on level milestones (e.g., 50+ / 100+ levels)
+            let mirrorCount = 3;
+            if (currentLevel >= 100) {
+                mirrorCount = 5;
+            } else if (currentLevel >= 50) {
+                mirrorCount = 4;
+            }
 
-            for(let i = 0; i < totalMirrors; i++) {
+            mirrors = [];
+            // Fixed target angles required for each mirror to form a valid path
+            let targetAngles = [0.65, 1.25, -0.45, 0.90, 1.50];
+            let positions = [
+                {x: 100, y: 170},
+                {x: 190, y: 110},
+                {x: 270, y: 160},
+                {x: 140, y: 70},
+                {x: 230, y: 80}
+            ];
+
+            for(let i = 0; i < mirrorCount; i++) {
                 mirrors.push({
-                    x: 90 + (i * 45) + (i % 2 * 15),
-                    y: 60 + ((i * 50) % 130),
+                    x: positions[i].x,
+                    y: positions[i].y,
                     radius: 14,
-                    angle: Math.random() * 3,
+                    currentAngle: Math.floor(Math.random() * 4) * 0.5, // Random starting angle
+                    targetAngle: targetAngles[i], // Fixed correct angle required
                     hit: false
                 });
             }
@@ -325,7 +337,6 @@
         }
 
         function traceLaser() {
-            // Reset hit status for all mirrors before tracing
             mirrors.forEach(m => m.hit = false);
 
             let rx = laserSource.x;
@@ -335,34 +346,35 @@
             let path = [{x: rx, y: ry}];
             let hitTarget = false;
 
-            for (let step = 0; step < 400; step++) {
+            for (let step = 0; step < 500; step++) {
                 rx += Math.cos(rAngle) * 4;
                 ry += Math.sin(rAngle) * 4;
                 path.push({x: rx, y: ry});
 
                 if (rx < 0 || rx > canvas.width || ry < 0 || ry > canvas.height) break;
 
-                // Check target hit
                 if (Math.hypot(rx - targetCore.x, ry - targetCore.y) < targetCore.radius) {
                     hitTarget = true;
                     break;
                 }
 
-                // Check mirrors collision
                 for (let m of mirrors) {
                     if (Math.hypot(rx - m.x, ry - m.y) < m.radius) {
-                        m.hit = true; // Mark this mirror as touched by laser
-                        let normal = m.angle;
-                        rAngle = 2 * normal - rAngle - Math.PI;
-                        rx += Math.cos(rAngle) * 8;
-                        ry += Math.sin(rAngle) * 8;
+                        // Check if mirror is rotated close enough to its required fixed angle
+                        let angleDiff = Math.abs((m.currentAngle % Math.PI) - (m.targetAngle % Math.PI));
+                        if (angleDiff < 0.25 || angleDiff > (Math.PI - 0.25)) {
+                            m.hit = true;
+                            let normal = m.currentAngle;
+                            rAngle = 2 * normal - rAngle - Math.PI;
+                            rx += Math.cos(rAngle) * 8;
+                            ry += Math.sin(rAngle) * 8;
+                        }
                         break;
                     }
                 }
                 if (hitTarget) break;
             }
 
-            // Verify if ALL mirrors were hit by the laser
             let allMirrorsHit = mirrors.every(m => m.hit);
             let success = hitTarget && allMirrorsHit;
 
@@ -380,7 +392,6 @@
 
             let result = traceLaser();
 
-            // Draw Laser Beam (Cyan if successful, Red if incomplete)
             ctx.strokeStyle = result.success ? "#00ffcc" : "#ff3366";
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -388,29 +399,26 @@
             result.path.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
 
-            // Draw Laser Source
             ctx.fillStyle = "#ffaa00";
             ctx.beginPath();
             ctx.arc(laserSource.x, laserSource.y, 14, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw Target Core
             ctx.fillStyle = result.success ? "#00ffcc" : "#00aa55";
             ctx.beginPath();
             ctx.arc(targetCore.x, targetCore.y, targetCore.radius, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw Mirrors (Green border if hit, Red border if missed)
             mirrors.forEach(m => {
                 ctx.save();
                 ctx.translate(m.x, m.y);
-                ctx.rotate(m.angle);
+                ctx.rotate(m.currentAngle);
                 ctx.fillStyle = m.hit ? "#00ffcc" : "#ff3366";
                 ctx.fillRect(-m.radius, -3, m.radius * 2, 6);
                 ctx.restore();
             });
 
-            document.getElementById("keyStatus").innerHTML = result.success ? "🔓 Core: All Mirrors Hit" : "🔒 Core: Mirrors Missing";
+            document.getElementById("keyStatus").innerHTML = result.success ? "🔓 Core: All Mirrors Aligned" : "🔒 Core: Align Correct Angles";
 
             if (result.success && !levelClearedFlag) {
                 levelClearedFlag = true;
@@ -441,7 +449,7 @@
 
             mirrors.forEach(m => {
                 if (Math.hypot(mouseX - m.x, mouseY - m.y) < 25) {
-                    m.angle += 0.4; 
+                    m.currentAngle += 0.4; // Rotate mirror on click
                     draw();
                 }
             });
