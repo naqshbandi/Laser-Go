@@ -1,202 +1,287 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LASER GO - Single File</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>LASER GO - CATCH LOGIC</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#05051a;color:white;font-family:sans-serif}
-.container{max-width:420px;margin:auto;padding:5px}
-.ad-slot{width:100%;height:50px;background:#15153a;border:1px dashed #00ffff;display:flex;align-items:center;justify-content:center;color:#00ffff;margin:6px 0;border-radius:8px;font-size:11px}
-h2{text-align:center;color:gold;margin:4px 0;letter-spacing:3px;text-shadow:0 0 10px gold}
-#gameBox{width:100%;height:62vh;background:black;border:2px solid gold;border-radius:15px;position:relative;overflow:hidden}
-canvas{width:100%;height:100%;display:block;touch-action:none}
-#termsScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#05051a;z-index:100;padding:20px;overflow-y:auto}
-.controls{display:flex;justify-content:space-between;margin-top:8px}
-.controls button{padding:8px 14px;border-radius:20px;border:none;background:gold;font-weight:bold}
-#infoBar{display:flex;justify-content:space-between;font-size:14px;padding:4px;color:gold}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050514;color:#fff;font-family:Arial;overflow:hidden}
+.container{max-width:420px;margin:0 auto;padding:6px;height:100vh;display:flex;flex-direction:column}
+.ad-slot{width:100%;min-height:48px;background:#12122e;border:1px dashed #00e5ff;display:flex;align-items:center;justify-content:center;color:#00e5ff;border-radius:8px;font-size:11px;margin:5px 0}
+.header{text-align:center;color:gold;font-size:18px;font-weight:800;letter-spacing:2px}
+.info{display:flex;justify-content:space-between;color:gold;font-size:12px;padding:4px}
+#gameBox{flex:1;background:#000;border:2px solid gold;border-radius:14px;overflow:hidden;position:relative}
+canvas{width:100%;height:100%;touch-action:none;display:block}
+#winBox{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:99}
+#winBox div{background:#111;border:2px solid gold;padding:20px;border-radius:15px;text-align:center}
+button{padding:10px 25px;border:none;background:gold;border-radius:20px;font-weight:800;margin-top:10px}
 </style>
 </head>
 <body>
-
-<!-- 1. TERMS SCREEN - سب سے پہلے یہی کھلے گا -->
-<div id="termsScreen">
-  <h2>Terms & Conditions</h2>
-  <p style="line-height:1.6;font-size:14px">
-    1. یہ گیم LASER GO آپ کی ملکیت ہے۔<br>
-    2. اس میں لگنے والے تمام Ads سے Earning 100% آپ کی ہوگی۔<br>
-    3. User کا ڈیٹا محفوظ ہے۔<br>
-    4. ہر لیول کے لیے 5 منٹ کا وقت ہے۔<br>
-    5. ہر 3 لیول بعد 30 سیکنڈ کا ویڈیو ایڈ چلے گا۔<br><br>
-  کیا آپ ان شرائط سے متفق ہیں؟
-  </p>
-  <label><input type="checkbox" id="acceptCheck"> میں متفق ہوں / I Accept</label><br><br>
-  <button id="acceptBtn" disabled style="width:100%;padding:12px;background:gray;color:white;border-radius:10px;border:none">Next</button>
+<div class="container">
+  <div class="ad-slot">BANNER TOP - 5866325293</div>
+  <div class="header">LASER GO - Level <span id="lvl">1</span></div>
+  <div class="info"><span id="hint">Mirror 1 ko touch karke laser ki taraf ghumao</span><span>Coins: <span id="coins">100</span></span></div>
+  <div id="gameBox"><canvas id="c" width="360" height="520"></canvas></div>
+  <div class="ad-slot">BANNER 3 - VIDEO: 1240684575</div>
 </div>
-
-<!-- 2. MAIN GAME -->
-<div class="container" id="mainGame" style="display:none">
-  <div class="ad-slot">TOP BANNER - ID:.../5866325293</div>
-  <h2>LASER GO</h2>
-  <div id="infoBar"><span id="levelTxt">Level: 1</span><span id="timerTxt">Time: 05:00</span><span id="coinTxt">Coins: 100</span></div>
-  <div class="ad-slot">BANNER 2</div>
-  <div id="gameBox"><canvas id="gameCanvas" width="360" height="500"></canvas></div>
-  <div class="ad-slot">BANNER 3 - Game Box ke neeche</div>
-  <div class="controls">
-    <button onclick="restartLevel()">Restart</button>
-    <button onclick="location.reload()">Deposit</button>
-    <button onclick="nextLevel()">Next</button>
-  </div>
-  <div class="ad-slot">BANNER 4 - Buttons ke neeche</div>
-  <div class="ad-slot">BANNER 5 - Footer</div>
-</div>
+<div id="winBox"><div><h2 style="color:gold">Level Complete!</h2><p id="winText"></p><button onclick="nextLevel()">Next Level</button></div></div>
 
 <script>
-// ===== SINGLE FILE LOGIC START =====
-const termsScreen = document.getElementById('termsScreen');
-const mainGame = document.getElementById('mainGame');
-const acceptCheck = document.getElementById('acceptCheck');
-const acceptBtn = document.getElementById('acceptBtn');
-
-// Terms Logic
-acceptCheck.addEventListener('change', ()=>{
-  if(acceptCheck.checked){ acceptBtn.disabled=false; acceptBtn.style.background='gold'; acceptBtn.style.color='black'; }
-  else{ acceptBtn.disabled=true; acceptBtn.style.background='gray'; }
-});
-acceptBtn.addEventListener('click', ()=>{
-  localStorage.setItem('lasergo_accepted','true');
-  termsScreen.style.display='none';
-  mainGame.style.display='block';
-  startGame();
-});
-if(localStorage.getItem('lasergo_accepted')=='true'){ termsScreen.style.display='none'; mainGame.style.display='block'; }
-
-const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 let level = parseInt(localStorage.getItem('lasergo_level')||'1');
 let coins = parseInt(localStorage.getItem('lasergo_coins')||'100');
 let mirrors = [];
-let attempts = 0;
-let playedSinceAd = parseInt(localStorage.getItem('playedSinceAd')||'0');
-let sun={x:30,y:470}, target={x:330,y:30};
-let timer, timeLeft=300;
+let sun = {x:40, y:480};
+let target = {x:320, y:40, r:18};
+let activeChain = 0; // kitne mirrors catch ho chuke hain sequence me
+let selectedMirror = null;
 
-function startGame(){
-  document.getElementById('levelTxt').innerText='Level: '+level;
-  document.getElementById('coinTxt').innerText='Coins: '+coins;
-  generateLevel(level);
-  startTimer();
-  check10MinReturn();
+function getMirrorCount(lvl){ return 5 + Math.floor(lvl/100)*2; }
+
+function generate(){
+  document.getElementById('lvl').innerText = level;
+  document.getElementById('coins').innerText = coins;
+  let count = getMirrorCount(level);
+  mirrors = [];
+  for(let i=0;i<count;i++){
+    mirrors.push({x: 60+Math.random()*240, y: 80+Math.random()*350, angle: Math.random()*360, caught: false});
+  }
+  activeChain = 0;
+  updateHint();
+  draw();
 }
 
-function generateLevel(lvl){
-  let mirrorCount = 5 + Math.floor(lvl/100)*2; // ہر 100 لیول بعد 2 آئینے زیادہ
-  mirrors=[];
-  for(let i=0;i<mirrorCount;i++){
-    mirrors.push({x:50+Math.random()*260,y:60+Math.random()*380,angle:Math.random()*360});
+function updateHint(){
+  if(activeChain < mirrors.length){
+    document.getElementById('hint').innerText = `Mirror ${activeChain+1} ko laser ki taraf lao`;
+  } else {
+    document.getElementById('hint').innerText = `Ab last mirror se Target par le jao`;
   }
-  draw();
 }
 
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  // Sun - Golden Circle Box نہیں
-  ctx.beginPath(); ctx.arc(sun.x,sun.y,12,0,Math.PI*2); ctx.fillStyle='gold'; ctx.shadowBlur=15; ctx.shadowColor='gold'; ctx.fill(); ctx.shadowBlur=0;
-  // Target - Green
-  ctx.beginPath(); ctx.arc(target.x,target.y,12,0,Math.PI*2); ctx.fillStyle='#00ff00'; ctx.shadowBlur=15; ctx.shadowColor='#00ff00'; ctx.fill(); ctx.shadowBlur=0;
-  // Genuine Round Mirrors
-  mirrors.forEach(m=>{
+  // Sun
+  ctx.beginPath(); ctx.arc(sun.x,sun.y,13,0,Math.PI*2); ctx.fillStyle='gold'; ctx.shadowBlur=15; ctx.shadowColor='gold'; ctx.fill(); ctx.shadowBlur=0;
+  // Target
+  ctx.beginPath(); ctx.arc(target.x,target.y,target.r,0,Math.PI*2); ctx.fillStyle = activeChain===mirrors.length? '#00ff66' : '#335533'; ctx.shadowBlur = activeChain===mirrors.length? 15:0; ctx.shadowColor='#00ff66'; ctx.fill(); ctx.shadowBlur=0;
+
+  // Draw mirrors
+  mirrors.forEach((m,i)=>{
     ctx.save(); ctx.translate(m.x,m.y); ctx.rotate(m.angle*Math.PI/180);
-    let grad = ctx.createRadialGradient(0,0,2,0,0,18);
-    grad.addColorStop(0,'#ffffff'); grad.addColorStop(0.5,'#c0c0c0'); grad.addColorStop(1,'#666666');
+    let grad = ctx.createRadialGradient(0,0,2,0,0,19);
+    if(m.caught){ grad.addColorStop(0,'#ffffcc'); grad.addColorStop(1,'#ffcc00'); }
+    else if(i===activeChain){ grad.addColorStop(0,'#aaffff'); grad.addColorStop(1,'#0088aa'); }
+    else { grad.addColorStop(0,'#ffffff'); grad.addColorStop(1,'#666'); }
     ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='silver'; ctx.lineWidth=2; ctx.stroke();
-    // Reflection line
-    ctx.strokeStyle='white'; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
+    ctx.strokeStyle = m.caught? 'gold' : (i===activeChain? '#00e5ff' : 'white');
+    ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-15,0); ctx.lineTo(15,0); ctx.stroke();
+    ctx.fillStyle='black'; ctx.font='bold 11px Arial'; ctx.textAlign='center'; ctx.fillText(i+1,0,4);
     ctx.restore();
   });
-  drawLaserPath();
+  drawLaserChain();
 }
 
-function drawLaserPath(){
-  ctx.strokeStyle='rgba(255,0,0,0.8)'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(sun.x,sun.y);
-  // Simple ray - آپ اس کو Reflection logic سے بڑھا سکتے ہیں
-  if(mirrors.length>0){ ctx.lineTo(mirrors[0].x,mirrors[0].y); }
-  ctx.stroke();
+function drawLaserChain(){
+  if(mirrors.length===0) return;
+  let pos = {x:sun.x, y:sun.y};
+  let dir = null; // laser ka direction
+
+  ctx.strokeStyle='red'; ctx.lineWidth=2.5; ctx.shadowBlur=7; ctx.shadowColor='red';
+  ctx.beginPath(); ctx.moveTo(pos.x,pos.y);
+
+  for(let i=0; i<activeChain; i++){
+    let m = mirrors[i];
+    ctx.lineTo(m.x, m.y);
+    // is mirror se next tak ka direction nikalna
+    let rad = m.angle*Math.PI/180;
+    let mirrorVec = {x: Math.cos(rad), y: Math.sin(rad)};
+    let normal = {x: -mirrorVec.y, y: mirrorVec.x};
+    if(i===0){
+      let incoming = {x: m.x - sun.x, y: m.y - sun.y};
+      let l = Math.hypot(incoming.x,incoming.y); incoming.x/=l; incoming.y/=l;
+      let dot = incoming.x*normal.x + incoming.y*normal.y;
+      dir = {x: incoming.x - 2*dot*normal.x, y: incoming.y - 2*dot*normal.y};
+    } else {
+      let prev = mirrors[i-1];
+      let incoming = {x: m.x - prev.x, y: m.y - prev.y};
+      let l = Math.hypot(incoming.x,incoming.y); incoming.x/=l; incoming.y/=l;
+      let dot = incoming.x*normal.x + incoming.y*normal.y;
+      dir = {x: incoming.x - 2*dot*normal.x, y: incoming.y - 2*dot*normal.y};
+    }
+    pos = {x:m.x, y:m.y};
+  }
+
+  // Active mirror jo abhi catch hona hai uska preview
+  if(activeChain < mirrors.length){
+    if(activeChain===0){
+      // sun se active mirror tak choti line jo user ko guide kare
+      ctx.lineTo(mirrors[0].x, mirrors[0].y);
+      // agar user ne mirror ko sahi taraf ghumaya to catch logic yahan check hogi touch event me
+      // yahan sirf aim line dikhayenge
+      if(dir){
+        ctx.moveTo(pos.x,pos.y);
+        ctx.lineTo(pos.x+dir.x*400, pos.y+dir.y*400);
+      }
+    } else {
+      if(dir){
+        ctx.moveTo(pos.x,pos.y);
+        ctx.lineTo(pos.x+dir.x*500, pos.y+dir.y*500);
+      }
+    }
+  } else {
+    // sare mirrors catch ho gaye, ab last se target tak
+    if(dir){
+      ctx.moveTo(pos.x,pos.y);
+      let toTarget = {x: target.x - pos.x, y: target.y - pos.y};
+      let dist = Math.hypot(toTarget.x,toTarget.y);
+      toTarget.x/=dist; toTarget.y/=dist;
+      let align = dir.x*toTarget.x + dir.y*toTarget.y;
+      if(align > 0.992){ // bilkul seedha target par
+        ctx.strokeStyle='#00ff66';
+        ctx.lineTo(target.x,target.y);
+        ctx.stroke();
+        ctx.shadowBlur=0;
+        setTimeout(win, 300);
+        return;
+      } else {
+        ctx.lineTo(pos.x+dir.x*500, pos.y+dir.y*500);
+      }
+    }
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
 }
 
-// 5 Minute Timer
-function startTimer(){
-  clearInterval(timer); timeLeft=300;
-  timer=setInterval(()=>{
-    timeLeft--; let m=Math.floor(timeLeft/60), s=timeLeft%60;
-    document.getElementById('timerTxt').innerText=`Time: 0${m}:${s<10?'0'+s:s}`;
-    if(timeLeft<=0){ clearInterval(timer); handleGameOver(); }
-  },1000);
-}
+// CATCH LOGIC - Asli Game Play
+function tryCatch(){
+  if(activeChain >= mirrors.length) return;
+  let currMirror = mirrors[activeChain];
+  let prevPos = activeChain===0? sun : mirrors[activeChain-1];
 
-function handleGameOver(){
-  attempts++;
-  if(attempts>=3){
-    alert('3 بار فیل - اب 30 سیکنڈ کا ویڈیو ایڈ چلے گا');
-    showVideoAd('3_attempts'); attempts=0;
-  }else{
-    alert('Game Over! دوبارہ کوشش کریں - Attempt '+attempts);
-    startTimer();
+  let incoming = {x: currMirror.x - prevPos.x, y: currMirror.y - prevPos.y};
+  let l = Math.hypot(incoming.x,incoming.y); incoming.x/=l; incoming.y/=l;
+
+  let rad = currMirror.angle*Math.PI/180;
+  let mirrorVec = {x: Math.cos(rad), y: Math.sin(rad)};
+  let normal = {x: -mirrorVec.y, y: mirrorVec.x};
+
+  // Mirror ki side laser ki taraf hai ya nahi?
+  // Normal aur incoming ka dot product se pata chalega
+  let dotSide = Math.abs(incoming.x*normal.x + incoming.y*normal.y);
+
+  // Agar side sahi hai to mirror catch karega
+  if(dotSide > 0.15){ // side laser ki taraf hai
+    if(!currMirror.caught){
+      currMirror.caught = true;
+      activeChain++;
+      updateHint();
+      if(navigator.vibrate) navigator.vibrate(50);
+      draw();
+      // Auto check next chain ka aim
+      checkAutoNextCatch();
+    }
   }
 }
 
-function onWin(){
-  clearInterval(timer); attempts=0;
-  coins+=5; playedSinceAd++;
-  localStorage.setItem('lasergo_coins',coins);
-  localStorage.setItem('lasergo_level',level+1);
-  localStorage.setItem('playedSinceAd',playedSinceAd);
-  document.getElementById('coinTxt').innerText='Coins: '+coins;
-  alert('Congratulations! Level '+level+' Complete +5 Coins');
-  if(playedSinceAd>=3){
-    showVideoAd('3_levels'); playedSinceAd=0; localStorage.setItem('playedSinceAd','0');
-  }
-  level++; document.getElementById('levelTxt').innerText='Level: '+level;
-  generateLevel(level); startTimer();
-}
+function checkAutoNextCatch(){
+  // Dekho agle mirror par aim hai ya nahi
+  if(activeChain===0 || activeChain>=mirrors.length) return;
+  let curr = mirrors[activeChain-1];
+  let next = mirrors[activeChain];
 
-function showVideoAd(reason){
-  // یہاں آپ کا AdMob Interstitial ID چلے گا: ca-app-pub-1225122052797144/1240684575
-  // Web Hosting پر یہاں آپ AdSense کا Video Ad لگا سکتے ہیں
-  console.log('Showing 30s Ad due to: '+reason);
-  // Demo کے لیے
-  let adDiv=document.createElement('div');
-  adDiv.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column';
-  adDiv.innerHTML='<h3>Video Ad - 30s</h3><p>ID:.../1240684575</p><p id="adCount">30</p>';
-  document.body.appendChild(adDiv);
-  let c=30; let iv=setInterval(()=>{c--; document.getElementById('adCount').innerText=c; if(c<=0){clearInterval(iv); adDiv.remove();}},1000);
-}
+  let rad = curr.angle*Math.PI/180;
+  let mirrorVec = {x: Math.cos(rad), y: Math.sin(rad)};
+  let normal = {x: -mirrorVec.y, y: mirrorVec.x};
 
-function check10MinReturn(){
-  let last=localStorage.getItem('lastClosed');
-  if(last && (Date.now()-parseInt(last) > 10*60*1000)){
-    showVideoAd('10_min_return');
+  let prevPos = activeChain-1===0? sun : mirrors[activeChain-2];
+  let incoming = {x: curr.x - prevPos.x, y: curr.y - prevPos.y};
+  let l = Math.hypot(incoming.x,incoming.y); incoming.x/=l; incoming.y/=l;
+  let dot = incoming.x*normal.x + incoming.y*normal.y;
+  let reflected = {x: incoming.x - 2*dot*normal.x, y: incoming.y - 2*dot*normal.y};
+
+  let toNext = {x: next.x - curr.x, y: next.y - curr.y};
+  let dist = Math.hypot(toNext.x,toNext.y); toNext.x/=dist; toNext.y/=dist;
+  let align = reflected.x*toNext.x + reflected.y*toNext.y;
+
+  if(align > 0.985){ // bilkul seedha agle mirror par
+    next.caught = true;
+    activeChain++;
+    updateHint();
+    if(navigator.vibrate) navigator.vibrate(30);
+    setTimeout(()=>{ draw(); checkAutoNextCatch(); },150);
   }
 }
-window.addEventListener('beforeunload',()=>{localStorage.setItem('lastClosed',Date.now().toString());});
 
-function restartLevel(){ generateLevel(level); startTimer(); }
-function nextLevel(){ onWin(); }
+function win(){
+  document.getElementById('winText').innerText = `Level ${level} Complete! +5 Coins`;
+  document.getElementById('winBox').style.display='flex';
+  coins+=5; localStorage.setItem('lasergo_coins', coins);
+  let played = parseInt(localStorage.getItem('playedSinceAd')||'0')+1;
+  localStorage.setItem('playedSinceAd', played);
+}
 
-// Mirror Rotation - Long Press
-let activeMirror=null, pressTimer=null;
-canvas.addEventListener('touchstart', e=>{
-  let t=e.touches[0]; let rect=canvas.getBoundingClientRect();
-  let x=(t.clientX-rect.left)*(canvas.width/rect.width);
-  let y=(t.clientY-rect.top)*(canvas.height/rect.height);
-  mirrors.forEach(m=>{ if(Math.hypot(x-m.x,y-m.y)<20){ activeMirror=m; pressTimer=setInterval(()=>{m.angle+=3; draw();},30); } });
+function nextLevel(){
+  document.getElementById('winBox').style.display='none';
+  level++; localStorage.setItem('lasergo_level', level);
+  let played = parseInt(localStorage.getItem('playedSinceAd')||'0');
+  if(played>=3){
+    console.log('SHOW VIDEO AD - ca-app-pub-1225122052797144/1240684575');
+    localStorage.setItem('playedSinceAd','0');
+    // Yahan aapka asli Video Ad chalega
+  }
+  generate();
+}
+
+// Touch Controls
+let isDragging = false;
+let dragMirror = null;
+
+function getPos(e){
+  let r = canvas.getBoundingClientRect();
+  let cx = e.touches?e.touches[0].clientX:e.clientX;
+  let cy = e.touches?e.touches[0].clientY:e.clientY;
+  return {x:(cx-r.left)*(canvas.width/r.width), y:(cy-r.top)*(canvas.height/r.height)};
+}
+
+canvas.addEventListener('touchstart', (e)=>{
+  let p = getPos(e);
+  mirrors.forEach(m=>{
+    if(Math.hypot(p.x-m.x, p.y-m.y)<30){
+      dragMirror = m;
+      isDragging = true;
+    }
+  });
 });
-canvas.addEventListener('touchend', ()=>{ clearInterval(pressTimer); activeMirror=null; if(Math.random()>0.8) onWin(); }); // Test Win
 
-if(localStorage.getItem('lasergo_accepted')=='true') startGame();
+canvas.addEventListener('touchmove', (e)=>{
+  if(!isDragging ||!dragMirror) return;
+  e.preventDefault();
+  dragMirror.angle += 4; // ghumao
+  if(dragMirror.angle>=360) dragMirror.angle-=360;
+  tryCatch();
+  draw();
+},{passive:false});
+
+canvas.addEventListener('touchend', ()=>{
+  isDragging=false; dragMirror=null; draw();
+});
+
+canvas.addEventListener('mousedown', (e)=>{
+  let p = getPos(e);
+  mirrors.forEach(m=>{ if(Math.hypot(p.x-m.x, p.y-m.y)<30){ dragMirror=m; isDragging=true; }});
+});
+canvas.addEventListener('mousemove', (e)=>{
+  if(!isDragging ||!dragMirror) return;
+  dragMirror.angle+=3;
+  tryCatch();
+  draw();
+});
+canvas.addEventListener('mouseup', ()=>{ isDragging=false; dragMirror=null; });
+
+generate();
 </script>
 </body>
 </html>
